@@ -16,6 +16,14 @@ An Android app that reads events from a DAVx5-synced **"ToDo" calendar** and dis
 - Notification is automatically restored after device reboot
 - Clean Material 3 UI
 
+## Screenshots
+
+| App list view | Notifications (collapsed) | Notifications (expanded) |
+|:---:|:---:|:---:|
+| ![App list](screenshots/app_list.png) | ![Notifications collapsed](screenshots/notif_collapsed.png) | ![Notifications expanded](screenshots/notif_expanded.png) |
+
+> Place your screenshots in the `screenshots/` folder with the filenames above.
+
 ## How notification persistence works
 
 - A **foreground service** (`TodoForegroundService`) keeps a summary notification alive permanently.
