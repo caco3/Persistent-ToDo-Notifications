@@ -17,6 +17,8 @@ class TodoForegroundService : Service() {
     private var calendarObserver: ContentObserver? = null
     private val activeNotifIds = mutableSetOf<Int>()
     private val handler = Handler(Looper.getMainLooper())
+    private val pendingNotifRunnables = mutableListOf<Runnable>()
+    private var batchStartMs = 0L
 
     private val calendarUpdateRunnable = Runnable { updateNotifications() }
 
@@ -30,6 +32,7 @@ class TodoForegroundService : Service() {
     companion object {
         private const val CALENDAR_DEBOUNCE_MS = 500L
         private const val WATCHDOG_MS = 3_000L
+        private const val NOTIF_STAGGER_MS = 250L
 
         fun startOrUpdate(context: Context) {
             ContextCompat.startForegroundService(
@@ -53,6 +56,8 @@ class TodoForegroundService : Service() {
 
     private fun repostMissing() {
         if (activeNotifIds.isEmpty()) return
+        val batchDurationMs = activeNotifIds.size * NOTIF_STAGGER_MS + 1_000L
+        if (System.currentTimeMillis() - batchStartMs < batchDurationMs) return
         val nm = getSystemService(NotificationManager::class.java)
         val visibleIds = nm.activeNotifications.map { it.id }.toSet()
         if (activeNotifIds.all { it in visibleIds }) return
@@ -60,6 +65,7 @@ class TodoForegroundService : Service() {
     }
 
     private fun updateNotifications() {
+        batchStartMs = System.currentTimeMillis()
         val todos = CalendarTodoSource.getTodos(this)
         val nm = getSystemService(NotificationManager::class.java)
 
@@ -68,18 +74,19 @@ class TodoForegroundService : Service() {
             NotificationHelper.buildSummaryNotification(this, todos)
         )
 
-        val newIds = todos.map { NotificationHelper.getNotificationIdForTodo(it.id) }.toSet()
+        pendingNotifRunnables.forEach { handler.removeCallbacks(it) }
+        pendingNotifRunnables.clear()
 
+        val newIds = todos.map { NotificationHelper.getNotificationIdForTodo(it.id) }.toSet()
         (activeNotifIds - newIds).forEach { nm.cancel(it) }
         activeNotifIds.clear()
         activeNotifIds.addAll(newIds)
 
         todos.forEachIndexed { index, todo ->
             val id = NotificationHelper.getNotificationIdForTodo(todo.id)
-            handler.postDelayed(
-                { nm.notify(id, NotificationHelper.buildTodoNotification(this, todo)) },
-                index * 30L
-            )
+            val runnable = Runnable { nm.notify(id, NotificationHelper.buildTodoNotification(this, todo)) }
+            pendingNotifRunnables.add(runnable)
+            handler.postDelayed(runnable, index * NOTIF_STAGGER_MS)
         }
     }
 
@@ -102,6 +109,8 @@ class TodoForegroundService : Service() {
     override fun onDestroy() {
         handler.removeCallbacks(calendarUpdateRunnable)
         handler.removeCallbacks(watchdogRunnable)
+        pendingNotifRunnables.forEach { handler.removeCallbacks(it) }
+        pendingNotifRunnables.clear()
         calendarObserver?.let { contentResolver.unregisterContentObserver(it) }
         calendarObserver = null
         super.onDestroy()

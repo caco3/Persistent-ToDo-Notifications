@@ -12,7 +12,7 @@ object CalendarTodoSource {
     private const val TAG = "CalendarTodoSource"
     const val CALENDAR_NAME = "ToDo"
 
-    fun getTodos(context: Context): List<TodoItem> {
+    fun getTodos(context: Context, ignoreFilters: Boolean = false): List<TodoItem> {
         if (!hasCalendarPermission(context)) return emptyList()
 
         val calendarIds = findCalendarIds(context)
@@ -58,6 +58,8 @@ object CalendarTodoSource {
                 )
             }
         }
+
+        if (ignoreFilters) return todos
 
         val showOld = AppPreferences.getShowOldEvents(context)
         val jan2026 = Calendar.getInstance().apply {

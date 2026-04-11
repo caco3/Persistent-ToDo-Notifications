@@ -142,8 +142,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun refreshTodos(scrollToTop: Boolean = false) {
+        binding.progressIndicator.visibility = android.view.View.VISIBLE
         val todos = CalendarTodoSource.getTodos(this)
         adapter.submitList(todos) {
+            binding.progressIndicator.visibility = android.view.View.GONE
             if (scrollToTop) binding.recyclerView.scrollToPosition(0)
         }
         binding.textStatus.text = if (todos.isEmpty())
