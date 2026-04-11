@@ -6,6 +6,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todonotifications.databinding.ItemTodoBinding
+import java.text.DateFormat
+import java.util.Date
 
 class TodoAdapter : ListAdapter<TodoItem, TodoAdapter.ViewHolder>(DiffCallback()) {
 
@@ -25,6 +27,14 @@ class TodoAdapter : ListAdapter<TodoItem, TodoAdapter.ViewHolder>(DiffCallback()
 
         fun bind(todo: TodoItem) {
             binding.textTodoTitle.text = todo.title
+            binding.textTodoDate.text = if (todo.dtStart > 0L) {
+                val date = Date(todo.dtStart)
+                val datePart = DateFormat.getDateInstance(DateFormat.SHORT).format(date)
+                val timePart = DateFormat.getTimeInstance(DateFormat.SHORT).format(date)
+                "$datePart $timePart"
+            } else {
+                ""
+            }
         }
     }
 
