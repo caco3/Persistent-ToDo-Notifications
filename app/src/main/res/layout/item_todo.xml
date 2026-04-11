@@ -11,40 +11,15 @@
     app:strokeColor="?attr/colorOutlineVariant"
     app:strokeWidth="1dp">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/textTodoTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
         android:minHeight="56dp"
-        android:orientation="horizontal"
-        android:paddingEnd="4dp"
-        android:paddingStart="4dp">
-
-        <com.google.android.material.checkbox.MaterialCheckBox
-            android:id="@+id/checkboxComplete"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:contentDescription="@string/checkbox_description" />
-
-        <TextView
-            android:id="@+id/textTodoTitle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:paddingHorizontal="8dp"
-            android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
-            android:textColor="?attr/colorOnSurface" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnDelete"
-            style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@string/btn_delete_description"
-            app:icon="@drawable/ic_delete"
-            app:iconTint="?attr/colorError" />
-
-    </LinearLayout>
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="16dp"
+        android:gravity="center_vertical"
+        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+        android:textColor="?attr/colorOnSurface" />
 
 </com.google.android.material.card.MaterialCardView>

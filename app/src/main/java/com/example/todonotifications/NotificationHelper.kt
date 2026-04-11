@@ -7,7 +7,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 
 object NotificationHelper {
 
@@ -32,8 +31,7 @@ object NotificationHelper {
     }
 
     fun buildNotification(context: Context): Notification {
-        val todos = TodoPreferences(context).getTodos()
-        val pending = todos.filter { !it.isCompleted }
+        val todos = CalendarTodoSource.getTodos(context)
 
         val openAppIntent = PendingIntent.getActivity(
             context,
@@ -64,38 +62,33 @@ object NotificationHelper {
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setSubText("build: ${BuildConfig.GIT_HASH}")
 
-        val addAction = buildAddAction(context)
-
-        if (pending.isEmpty()) {
+        if (todos.isEmpty()) {
             builder
                 .setContentTitle(context.getString(R.string.notification_title_done))
                 .setContentText(context.getString(R.string.notification_text_done))
-                .addAction(addAction)
         } else {
             builder
                 .setContentTitle(
                     context.resources.getQuantityString(
-                        R.plurals.notification_title_count, pending.size, pending.size
+                        R.plurals.notification_title_count, todos.size, todos.size
                     )
                 )
-                .setContentText(pending.first().title)
-                .addAction(buildCompleteAction(context, pending.first()))
-                .addAction(addAction)
+                .setContentText(todos.first().title)
 
             val style = NotificationCompat.InboxStyle()
                 .setBigContentTitle(
                     context.resources.getQuantityString(
-                        R.plurals.notification_title_count, pending.size, pending.size
+                        R.plurals.notification_title_count, todos.size, todos.size
                     )
                 )
 
-            pending.take(6).forEach { todo ->
+            todos.take(6).forEach { todo ->
                 style.addLine("• ${todo.title}")
             }
 
-            if (pending.size > 6) {
+            if (todos.size > 6) {
                 style.setSummaryText(
-                    context.getString(R.string.notification_more, pending.size - 6)
+                    context.getString(R.string.notification_more, todos.size - 6)
                 )
             }
 
@@ -103,39 +96,5 @@ object NotificationHelper {
         }
 
         return builder.build()
-    }
-
-    private fun buildCompleteAction(context: Context, todo: TodoItem): NotificationCompat.Action {
-        val intent = PendingIntent.getBroadcast(
-            context,
-            todo.id.hashCode(),
-            Intent(context, NotificationActionReceiver::class.java).apply {
-                action = NotificationActionReceiver.ACTION_COMPLETE
-                putExtra(NotificationActionReceiver.EXTRA_TODO_ID, todo.id)
-            },
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        return NotificationCompat.Action(
-            R.drawable.ic_check,
-            context.getString(R.string.action_complete, todo.title.take(20)),
-            intent
-        )
-    }
-
-    private fun buildAddAction(context: Context): NotificationCompat.Action {
-        val intent = PendingIntent.getActivity(
-            context,
-            999,
-            Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-                action = MainActivity.ACTION_ADD_TODO
-            },
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        return NotificationCompat.Action(
-            R.drawable.ic_add,
-            context.getString(R.string.action_add_todo),
-            intent
-        )
     }
 }
