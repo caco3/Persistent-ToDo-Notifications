@@ -6,6 +6,9 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.provider.CalendarContract
+import androidx.core.net.toUri
 import androidx.core.app.NotificationCompat
 
 object NotificationHelper {
@@ -30,6 +33,21 @@ object NotificationHelper {
         TodoForegroundService.startOrUpdate(context)
     }
 
+    fun buildOpenEventIntent(context: Context, eventId: String): Intent {
+        val uri = "${CalendarContract.Events.CONTENT_URI}/$eventId".toUri()
+        val bc2Intent = Intent(Intent.ACTION_VIEW, uri).apply {
+            setPackage("com.appgenix.bizcal")
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        return if (context.packageManager.resolveActivity(bc2Intent, PackageManager.MATCH_DEFAULT_ONLY) != null) {
+            bc2Intent
+        } else {
+            Intent(Intent.ACTION_VIEW, uri).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+        }
+    }
+
     fun buildNotification(context: Context): Notification {
         val todos = CalendarTodoSource.getTodos(context)
 
@@ -41,6 +59,15 @@ object NotificationHelper {
             },
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
+
+        val firstTodoIntent = if (todos.isNotEmpty()) {
+            PendingIntent.getActivity(
+                context,
+                1,
+                buildOpenEventIntent(context, todos.first().id),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        } else null
 
         val repostIntent = PendingIntent.getBroadcast(
             context,
@@ -55,7 +82,7 @@ object NotificationHelper {
             .setSmallIcon(R.drawable.ic_notification)
             .setOngoing(true)
             .setAutoCancel(false)
-            .setContentIntent(openAppIntent)
+            .setContentIntent(firstTodoIntent ?: openAppIntent)
             .setDeleteIntent(repostIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)

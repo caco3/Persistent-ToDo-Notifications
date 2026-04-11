@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.provider.CalendarContract
 import android.util.Log
+import java.util.Calendar
 
 object CalendarTodoSource {
 
@@ -58,7 +59,14 @@ object CalendarTodoSource {
             }
         }
 
-        return todos
+        val showOld = AppPreferences.getShowOldEvents(context)
+        if (showOld) return todos
+
+        val jan2026 = Calendar.getInstance().apply {
+            set(2026, Calendar.JANUARY, 1, 0, 0, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+        return todos.filter { it.dtStart >= jan2026 }
     }
 
     fun findCalendarIds(context: Context): List<Long> {

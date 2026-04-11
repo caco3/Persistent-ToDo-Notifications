@@ -4,6 +4,7 @@
 
     <!-- Status bar -->
     <string name="status_empty">No events found in the "Todo" calendar</string>
+    <string name="switch_show_old">Before 2026</string>
     <string name="dialog_cancel">Cancel</string>
 
     <!-- Notification channel -->

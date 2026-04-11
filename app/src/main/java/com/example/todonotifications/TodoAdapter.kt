@@ -9,7 +9,9 @@ import com.example.todonotifications.databinding.ItemTodoBinding
 import java.text.DateFormat
 import java.util.Date
 
-class TodoAdapter : ListAdapter<TodoItem, TodoAdapter.ViewHolder>(DiffCallback()) {
+class TodoAdapter(
+    private val onItemClick: (TodoItem) -> Unit
+) : ListAdapter<TodoItem, TodoAdapter.ViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemTodoBinding.inflate(
@@ -26,6 +28,7 @@ class TodoAdapter : ListAdapter<TodoItem, TodoAdapter.ViewHolder>(DiffCallback()
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(todo: TodoItem) {
+            binding.root.setOnClickListener { onItemClick(todo) }
             binding.textTodoTitle.text = todo.title
             binding.textTodoDate.text = if (todo.dtStart > 0L) {
                 val date = Date(todo.dtStart)

@@ -43,9 +43,16 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.subtitle = "build: ${BuildConfig.GIT_HASH}"
 
-        adapter = TodoAdapter()
+        adapter = TodoAdapter { todo -> openTodoEvent(todo) }
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = adapter
+
+        binding.switchShowOld.isChecked = AppPreferences.getShowOldEvents(this)
+        binding.switchShowOld.setOnCheckedChangeListener { _, checked ->
+            AppPreferences.setShowOldEvents(this, checked)
+            if (hasCalendarPermission()) refreshTodos()
+            startNotificationService()
+        }
 
         checkPermissionsAndStart()
     }
@@ -105,6 +112,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun startNotificationService() {
         NotificationHelper.postTodoNotification(this)
+    }
+
+    private fun openTodoEvent(todo: TodoItem) {
+        val intent = NotificationHelper.buildOpenEventIntent(this, todo.id)
+        startActivity(intent)
     }
 
     private fun refreshTodos() {
