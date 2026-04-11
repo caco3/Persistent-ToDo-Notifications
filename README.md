@@ -9,11 +9,14 @@ An Android app that reads events from a DAVx5-synced **"ToDo" calendar** and dis
 - Notifications are restored automatically within ~3 seconds if dismissed (watchdog)
 - Tap a notification card to open the event in BC2 calendar app (fallback: system calendar)
 - **Delete** a todo directly from the notification card ("Delete" action button) or from the app's list view
-- Filters:
+- Filters (via overflow menu):
   - **Also show ToDos from before 2026** toggle
   - **Only show ToDos within ±1 week** toggle
+  - **Only show ToDos within ±1 month** toggle
+  - **Demo mode** — shows synthetic dummy todos (no calendar required)
 - Notifications update automatically when the calendar changes (ContentObserver)
-- Notification is automatically restored after device reboot
+- Notifications reliably restored after device reboot (foreground service started immediately on `BOOT_COMPLETED`)
+- About dialog with app version info
 - Clean Material 3 UI
 
 ## Screenshots
@@ -30,7 +33,7 @@ An Android app that reads events from a DAVx5-synced **"ToDo" calendar** and dis
 - Individual per-todo notifications use `setOngoing(true)` but can be dismissed on Android 14+.
 - A **watchdog** runs every 3 seconds: it checks `NotificationManager.getActiveNotifications()` and reposts any missing individual notifications via `nm.notify()`.
 - To avoid Android's notification rate-limiting, individual notifications are posted with a 250 ms stagger between each.
-- On device reboot, `BootReceiver` restarts the foreground service.
+- On device reboot, `BootReceiver` starts `TodoForegroundService`. `startForeground()` is called immediately in `onStartCommand()` before any calendar query, satisfying Android's 5-second foreground service deadline even when the calendar ContentProvider is slow to become available at boot.
 
 ## Requirements
 
