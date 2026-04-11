@@ -56,6 +56,14 @@
                     android:text="@string/switch_near_only"
                     android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
 
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchMonthOnly"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:text="@string/switch_month_only"
+                    android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
+
             </LinearLayout>
 
         </LinearLayout>

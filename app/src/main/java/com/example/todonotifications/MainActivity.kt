@@ -68,6 +68,8 @@ class MainActivity : AppCompatActivity() {
             if (checked) {
                 binding.switchNearOnly.isChecked = false
                 AppPreferences.setNearOnly(this, false)
+                binding.switchMonthOnly.isChecked = false
+                AppPreferences.setMonthOnly(this, false)
             }
             AppPreferences.setShowOldEvents(this, checked)
             if (hasCalendarPermission()) refreshTodos(scrollToTop = true)
@@ -82,8 +84,26 @@ class MainActivity : AppCompatActivity() {
             if (checked) {
                 binding.switchShowOld.isChecked = false
                 AppPreferences.setShowOldEvents(this, false)
+                binding.switchMonthOnly.isChecked = false
+                AppPreferences.setMonthOnly(this, false)
             }
             AppPreferences.setNearOnly(this, checked)
+            if (hasCalendarPermission()) refreshTodos(scrollToTop = true)
+            startNotificationService()
+            updatingFilters = false
+        }
+
+        binding.switchMonthOnly.isChecked = AppPreferences.getMonthOnly(this)
+        binding.switchMonthOnly.setOnCheckedChangeListener { _, checked ->
+            if (updatingFilters) return@setOnCheckedChangeListener
+            updatingFilters = true
+            if (checked) {
+                binding.switchShowOld.isChecked = false
+                AppPreferences.setShowOldEvents(this, false)
+                binding.switchNearOnly.isChecked = false
+                AppPreferences.setNearOnly(this, false)
+            }
+            AppPreferences.setMonthOnly(this, checked)
             if (hasCalendarPermission()) refreshTodos(scrollToTop = true)
             startNotificationService()
             updatingFilters = false
