@@ -16,20 +16,31 @@ class TodoForegroundService : Service() {
 
     private var calendarObserver: ContentObserver? = null
     private val activeNotifIds = mutableSetOf<Int>()
+    private val handler = Handler(Looper.getMainLooper())
+    private val updateRunnable = Runnable { updateNotifications() }
 
     companion object {
+        private const val DEBOUNCE_MS = 200L
+
         fun startOrUpdate(context: Context) {
             ContextCompat.startForegroundService(
                 context,
                 Intent(context, TodoForegroundService::class.java)
             )
         }
+
+        fun scheduleRepost(context: Context) = startOrUpdate(context)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        updateNotifications()
+        scheduleUpdate()
         registerCalendarObserver()
         return START_STICKY
+    }
+
+    private fun scheduleUpdate() {
+        handler.removeCallbacks(updateRunnable)
+        handler.postDelayed(updateRunnable, DEBOUNCE_MS)
     }
 
     private fun updateNotifications() {
@@ -54,10 +65,9 @@ class TodoForegroundService : Service() {
 
     private fun registerCalendarObserver() {
         if (calendarObserver != null) return
-        val handler = Handler(Looper.getMainLooper())
         calendarObserver = object : ContentObserver(handler) {
             override fun onChange(selfChange: Boolean, uri: Uri?) {
-                updateNotifications()
+                scheduleUpdate()
             }
         }.also { observer ->
             contentResolver.registerContentObserver(
@@ -69,6 +79,7 @@ class TodoForegroundService : Service() {
     }
 
     override fun onDestroy() {
+        handler.removeCallbacks(updateRunnable)
         calendarObserver?.let { contentResolver.unregisterContentObserver(it) }
         calendarObserver = null
         super.onDestroy()

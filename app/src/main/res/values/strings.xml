@@ -4,7 +4,8 @@
 
     <!-- Status bar -->
     <string name="status_empty">No events found in the "Todo" calendar</string>
-    <string name="switch_show_old">Before 2026</string>
+    <string name="switch_show_old">Also show ToDos from before 2026</string>
+    <string name="switch_near_only">Only show ToDos within ±1 week</string>
     <string name="dialog_cancel">Cancel</string>
 
     <!-- Notification channel -->

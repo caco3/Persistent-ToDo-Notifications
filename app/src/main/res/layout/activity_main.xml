@@ -43,13 +43,29 @@
                 android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                 android:textColor="?attr/colorOnSurfaceVariant" />
 
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/switchShowOld"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:checked="false"
-                android:text="@string/switch_show_old"
-                android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
+                android:orientation="vertical"
+                android:gravity="end">
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchShowOld"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:text="@string/switch_show_old"
+                    android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchNearOnly"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:text="@string/switch_near_only"
+                    android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
+
+            </LinearLayout>
 
         </LinearLayout>
 

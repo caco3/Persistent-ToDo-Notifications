@@ -54,6 +54,13 @@ class MainActivity : AppCompatActivity() {
             startNotificationService()
         }
 
+        binding.switchNearOnly.isChecked = AppPreferences.getNearOnly(this)
+        binding.switchNearOnly.setOnCheckedChangeListener { _, checked ->
+            AppPreferences.setNearOnly(this, checked)
+            if (hasCalendarPermission()) refreshTodos(scrollToTop = true)
+            startNotificationService()
+        }
+
         checkPermissionsAndStart()
     }
 
