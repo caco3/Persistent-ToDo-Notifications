@@ -37,9 +37,9 @@ object NotificationHelper {
     }
 
     fun getNotificationIdForTodo(todoId: String): Int {
-        val raw = todoId.toLongOrNull()?.rem(900_000L)?.toInt()
-            ?: (todoId.hashCode() and 0x7FFF_FFFF) % 900_000
-        return (if (raw < 0) raw + 900_000 else raw) + 100_000
+        val raw = todoId.toLongOrNull()?.toInt() ?: todoId.hashCode()
+        val id = if (raw == Int.MIN_VALUE) Int.MAX_VALUE else kotlin.math.abs(raw)
+        return if (id == NOTIFICATION_ID_SUMMARY) id + 1 else id
     }
 
     fun buildOpenEventIntent(context: Context, eventId: String): Intent {
