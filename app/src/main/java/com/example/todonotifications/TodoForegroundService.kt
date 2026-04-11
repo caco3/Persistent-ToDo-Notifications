@@ -43,6 +43,10 @@ class TodoForegroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        startForeground(
+            NotificationHelper.NOTIFICATION_ID_SUMMARY,
+            NotificationHelper.buildSummaryNotification(this, emptyList())
+        )
         updateNotifications()
         registerCalendarObserver()
         startWatchdog()
@@ -66,7 +70,8 @@ class TodoForegroundService : Service() {
 
     private fun updateNotifications() {
         batchStartMs = System.currentTimeMillis()
-        val todos = CalendarTodoSource.getTodos(this)
+        val todos = if (AppPreferences.getDemoMode(this)) CalendarTodoSource.getDummyTodos()
+                    else CalendarTodoSource.getTodos(this)
         val nm = getSystemService(NotificationManager::class.java)
 
         startForeground(

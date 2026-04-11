@@ -102,6 +102,25 @@ object CalendarTodoSource {
         return ids
     }
 
+    fun getDummyTodos(): List<TodoItem> {
+        val now = System.currentTimeMillis()
+        val day = 24 * 60 * 60 * 1000L
+        return listOf(
+            TodoItem("1", "Call dentist to reschedule appointment",   now - 2 * day),
+            TodoItem("2", "Review Q2 budget report",                   now - day),
+            TodoItem("3", "Buy birthday gift for Anna",                now + day),
+            TodoItem("4", "Submit expense report",                     now + 2 * day),
+            TodoItem("5", "Team standup preparation",                  now + 3 * day),
+            TodoItem("6", "Renew car insurance",                       now + 5 * day),
+            TodoItem("7", "Book hotel for conference",                 now + 8 * day),
+            TodoItem("8", "Finish slide deck for product review",      now + 10 * day),
+            TodoItem("9", "Pay quarterly taxes",                       now + 14 * day),
+            TodoItem("10", "Schedule annual checkup",                  now + 18 * day),
+            TodoItem("11", "Order replacement laptop charger",         now + 21 * day),
+            TodoItem("12", "Plan team offsite agenda",                 now + 25 * day)
+        )
+    }
+
     fun hasCalendarPermission(context: Context): Boolean =
         context.checkSelfPermission(Manifest.permission.READ_CALENDAR) ==
                 PackageManager.PERMISSION_GRANTED

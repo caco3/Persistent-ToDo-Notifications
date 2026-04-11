@@ -8,6 +8,7 @@ object AppPreferences {
     private const val KEY_SHOW_OLD_EVENTS = "show_old_events"
     private const val KEY_NEAR_ONLY = "near_only"
     private const val KEY_MONTH_ONLY = "month_only"
+    private const val KEY_DEMO_MODE = "demo_mode"
 
     fun getShowOldEvents(context: Context): Boolean =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -34,5 +35,14 @@ object AppPreferences {
     fun setMonthOnly(context: Context, value: Boolean) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .edit().putBoolean(KEY_MONTH_ONLY, value).apply()
+    }
+
+    fun getDemoMode(context: Context): Boolean =
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(KEY_DEMO_MODE, false)
+
+    fun setDemoMode(context: Context, value: Boolean) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit().putBoolean(KEY_DEMO_MODE, value).apply()
     }
 }

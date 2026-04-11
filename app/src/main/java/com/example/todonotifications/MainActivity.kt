@@ -9,6 +9,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.CalendarContract
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -21,7 +23,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: TodoAdapter
-    private var updatingFilters = false
     private val calendarObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
         override fun onChange(selfChange: Boolean) {
             if (hasCalendarPermission()) refreshTodos()
@@ -52,7 +53,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
-        supportActionBar?.subtitle = "build: ${BuildConfig.GIT_HASH}"
 
         adapter = TodoAdapter(
             onItemClick = { todo -> openTodoEvent(todo) },
@@ -61,55 +61,78 @@ class MainActivity : AppCompatActivity() {
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = adapter
 
-        binding.switchShowOld.isChecked = AppPreferences.getShowOldEvents(this)
-        binding.switchShowOld.setOnCheckedChangeListener { _, checked ->
-            if (updatingFilters) return@setOnCheckedChangeListener
-            updatingFilters = true
-            if (checked) {
-                binding.switchNearOnly.isChecked = false
-                AppPreferences.setNearOnly(this, false)
-                binding.switchMonthOnly.isChecked = false
-                AppPreferences.setMonthOnly(this, false)
-            }
-            AppPreferences.setShowOldEvents(this, checked)
-            if (hasCalendarPermission()) refreshTodos(scrollToTop = true)
-            startNotificationService()
-            updatingFilters = false
-        }
-
-        binding.switchNearOnly.isChecked = AppPreferences.getNearOnly(this)
-        binding.switchNearOnly.setOnCheckedChangeListener { _, checked ->
-            if (updatingFilters) return@setOnCheckedChangeListener
-            updatingFilters = true
-            if (checked) {
-                binding.switchShowOld.isChecked = false
-                AppPreferences.setShowOldEvents(this, false)
-                binding.switchMonthOnly.isChecked = false
-                AppPreferences.setMonthOnly(this, false)
-            }
-            AppPreferences.setNearOnly(this, checked)
-            if (hasCalendarPermission()) refreshTodos(scrollToTop = true)
-            startNotificationService()
-            updatingFilters = false
-        }
-
-        binding.switchMonthOnly.isChecked = AppPreferences.getMonthOnly(this)
-        binding.switchMonthOnly.setOnCheckedChangeListener { _, checked ->
-            if (updatingFilters) return@setOnCheckedChangeListener
-            updatingFilters = true
-            if (checked) {
-                binding.switchShowOld.isChecked = false
-                AppPreferences.setShowOldEvents(this, false)
-                binding.switchNearOnly.isChecked = false
-                AppPreferences.setNearOnly(this, false)
-            }
-            AppPreferences.setMonthOnly(this, checked)
-            if (hasCalendarPermission()) refreshTodos(scrollToTop = true)
-            startNotificationService()
-            updatingFilters = false
-        }
-
         checkPermissionsAndStart()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        menu.findItem(R.id.action_show_old).isChecked  = AppPreferences.getShowOldEvents(this)
+        menu.findItem(R.id.action_near_only).isChecked = AppPreferences.getNearOnly(this)
+        menu.findItem(R.id.action_month_only).isChecked = AppPreferences.getMonthOnly(this)
+        menu.findItem(R.id.action_demo_mode).isChecked = AppPreferences.getDemoMode(this)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val newChecked = !item.isChecked
+        when (item.itemId) {
+            R.id.action_show_old -> {
+                AppPreferences.setShowOldEvents(this, newChecked)
+                if (newChecked) {
+                    AppPreferences.setNearOnly(this, false)
+                    AppPreferences.setMonthOnly(this, false)
+                }
+                if (hasCalendarPermission()) refreshTodos(scrollToTop = true)
+                startNotificationService()
+            }
+            R.id.action_near_only -> {
+                AppPreferences.setNearOnly(this, newChecked)
+                if (newChecked) {
+                    AppPreferences.setShowOldEvents(this, false)
+                    AppPreferences.setMonthOnly(this, false)
+                }
+                if (hasCalendarPermission()) refreshTodos(scrollToTop = true)
+                startNotificationService()
+            }
+            R.id.action_month_only -> {
+                AppPreferences.setMonthOnly(this, newChecked)
+                if (newChecked) {
+                    AppPreferences.setShowOldEvents(this, false)
+                    AppPreferences.setNearOnly(this, false)
+                }
+                if (hasCalendarPermission()) refreshTodos(scrollToTop = true)
+                startNotificationService()
+            }
+            R.id.action_demo_mode -> {
+                AppPreferences.setDemoMode(this, newChecked)
+                refreshTodos(scrollToTop = true)
+                startNotificationService()
+            }
+            R.id.action_about -> {
+                val repoUrl = getString(R.string.repo_url)
+                MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.menu_about)
+                    .setMessage("${getString(R.string.app_name)}\n\n" +
+                            "Build: ${BuildConfig.GIT_HASH}\n\n" +
+                            "Source:\n$repoUrl")
+                    .setPositiveButton(R.string.about_open_repo) { _, _ ->
+                        startActivity(
+                            android.content.Intent(
+                                android.content.Intent.ACTION_VIEW,
+                                android.net.Uri.parse(repoUrl)
+                            )
+                        )
+                    }
+                    .setNegativeButton(R.string.dialog_cancel, null)
+                    .show()
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
+        return true
     }
 
     override fun onResume() {
@@ -211,7 +234,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun refreshTodos(scrollToTop: Boolean = false) {
         binding.progressIndicator.visibility = android.view.View.VISIBLE
-        val todos = CalendarTodoSource.getTodos(this)
+        val todos = if (AppPreferences.getDemoMode(this)) CalendarTodoSource.getDummyTodos()
+                    else CalendarTodoSource.getTodos(this)
         adapter.submitList(todos) {
             binding.progressIndicator.visibility = android.view.View.GONE
             if (scrollToTop) binding.recyclerView.scrollToPosition(0)

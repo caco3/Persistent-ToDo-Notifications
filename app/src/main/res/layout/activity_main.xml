@@ -26,48 +26,6 @@
         android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="8dp"
-            android:gravity="center_vertical">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="end">
-
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/switchShowOld"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="false"
-                    android:text="@string/switch_show_old"
-                    android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
-
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/switchNearOnly"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="false"
-                    android:text="@string/switch_near_only"
-                    android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
-
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/switchMonthOnly"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="false"
-                    android:text="@string/switch_month_only"
-                    android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
-
-            </LinearLayout>
-
-        </LinearLayout>
-
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
