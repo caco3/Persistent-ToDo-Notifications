@@ -33,7 +33,9 @@ object CalendarTodoSource {
                 CalendarContract.Events._ID,
                 CalendarContract.Events.TITLE,
                 CalendarContract.Events.DTSTART,
-                CalendarContract.Events.STATUS
+                CalendarContract.Events.STATUS,
+                CalendarContract.Events.RRULE,
+                CalendarContract.Events.ORIGINAL_ID
             ),
             "($idPlaceholders) AND ${CalendarContract.Events.DELETED} != 1",
             selectionArgs,
@@ -41,19 +43,24 @@ object CalendarTodoSource {
         )
 
         cursor?.use {
-            val idCol     = it.getColumnIndexOrThrow(CalendarContract.Events._ID)
-            val titleCol  = it.getColumnIndexOrThrow(CalendarContract.Events.TITLE)
-            val startCol  = it.getColumnIndexOrThrow(CalendarContract.Events.DTSTART)
-            val statusCol = it.getColumnIndexOrThrow(CalendarContract.Events.STATUS)
+            val idCol         = it.getColumnIndexOrThrow(CalendarContract.Events._ID)
+            val titleCol      = it.getColumnIndexOrThrow(CalendarContract.Events.TITLE)
+            val startCol      = it.getColumnIndexOrThrow(CalendarContract.Events.DTSTART)
+            val statusCol     = it.getColumnIndexOrThrow(CalendarContract.Events.STATUS)
+            val rruleCol      = it.getColumnIndexOrThrow(CalendarContract.Events.RRULE)
+            val originalIdCol = it.getColumnIndexOrThrow(CalendarContract.Events.ORIGINAL_ID)
 
             while (it.moveToNext()) {
                 if (it.getInt(statusCol) == CalendarContract.Events.STATUS_CANCELED) continue
                 val title = it.getString(titleCol)?.takeIf { t -> t.isNotBlank() } ?: continue
+                val isRecurring = !it.getString(rruleCol).isNullOrEmpty() ||
+                        !it.getString(originalIdCol).isNullOrEmpty()
                 todos.add(
                     TodoItem(
-                        id      = it.getLong(idCol).toString(),
-                        title   = title,
-                        dtStart = it.getLong(startCol)
+                        id          = it.getLong(idCol).toString(),
+                        title       = title,
+                        dtStart     = it.getLong(startCol),
+                        isRecurring = isRecurring
                     )
                 )
             }

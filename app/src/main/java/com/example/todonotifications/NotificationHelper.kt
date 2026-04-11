@@ -132,7 +132,11 @@ object NotificationHelper {
             .setAutoCancel(false)
             .setContentTitle(todo.title)
             .setContentIntent(openEventIntent)
-            .addAction(R.drawable.ic_delete, context.getString(R.string.delete_confirm), deleteIntent)
+            .apply {
+                if (!todo.isRecurring) addAction(
+                    R.drawable.ic_delete, context.getString(R.string.delete_confirm), deleteIntent
+                )
+            }
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)

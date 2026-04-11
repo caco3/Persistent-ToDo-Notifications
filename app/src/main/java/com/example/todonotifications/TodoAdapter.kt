@@ -30,7 +30,12 @@ class TodoAdapter(
 
         fun bind(todo: TodoItem) {
             binding.root.setOnClickListener { onItemClick(todo) }
-            binding.btnDelete.setOnClickListener { onDeleteClick(todo) }
+            if (todo.isRecurring) {
+                binding.btnDelete.visibility = android.view.View.GONE
+            } else {
+                binding.btnDelete.visibility = android.view.View.VISIBLE
+                binding.btnDelete.setOnClickListener { onDeleteClick(todo) }
+            }
             binding.textTodoTitle.text = todo.title
             binding.textTodoDate.text = if (todo.dtStart > 0L) {
                 val date = Date(todo.dtStart)
