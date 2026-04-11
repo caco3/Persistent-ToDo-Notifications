@@ -10,7 +10,7 @@ An Android app that reads events from a DAVx5-synced **"ToDo" calendar** and dis
 - Tap a notification card to open the event in BC2 calendar app (fallback: system calendar)
 - **Delete** a todo directly from the notification card ("Delete" action button) or from the app's list view
 - Filters (via overflow menu):
-  - **Also show ToDos from before 2026** toggle
+  - **Show ToDos from <2026** toggle
   - **Only show ToDos within ±1 week** toggle
   - **Only show ToDos within ±1 month** toggle
   - **Demo mode** — shows synthetic dummy todos (no calendar required)
