@@ -15,6 +15,15 @@
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
+# ── Argument parsing ──────────────────────────────────────────────────────────
+FLASH=false
+for arg in "$@"; do
+    case "$arg" in
+        -f) FLASH=true ;;
+        *)  echo "Unknown argument: $arg"; exit 1 ;;
+    esac
+done
+
 # ── Colours ───────────────────────────────────────────────────────────────────
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; BOLD='\033[1m'; NC='\033[0m'
 info()  { echo -e "${GREEN}[INFO]${NC}  $*"; }
@@ -128,6 +137,14 @@ echo -e "${GREEN}${BOLD}✅  Build successful!${NC}"
 if [ -n "$APK_PATH" ]; then
     echo -e "    APK → ${BOLD}${APK_PATH}${NC}"
     echo ""
-    echo "To install on a connected device / emulator:"
-    echo "    $SDK_DIR/platform-tools/adb install \"$APK_PATH\""
+    if [ "$FLASH" = true ]; then
+        step "Flashing APK onto device"
+        ADB="$SDK_DIR/platform-tools/adb"
+        command -v "$ADB" &>/dev/null || error "adb not found at $ADB"
+        "$ADB" install -r "$APK_PATH"
+        info "APK installed on device"
+    else
+        echo "To install on a connected device / emulator:"
+        echo "    $SDK_DIR/platform-tools/adb install \"$APK_PATH\""
+    fi
 fi

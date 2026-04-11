@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
+        supportActionBar?.subtitle = "build: ${BuildConfig.GIT_HASH}"
 
         todoPrefs = TodoPreferences(this)
 
