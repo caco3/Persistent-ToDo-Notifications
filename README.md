@@ -1,30 +1,35 @@
 # Todo Notifications
 
-An Android app that keeps your todos as **persistent (ongoing) notifications** — they cannot be accidentally swiped away.
+An Android app that reads events from a DAVx5-synced **"ToDo" calendar** and displays them as **persistent grouped notifications** in the notification shade.
 
 ## Features
 
-- Add todos from the app or directly from the notification
-- Ongoing notification in the notification shade that **cannot be dismissed by swiping**
-- Expanded notification view shows up to 6 pending todos at once
-- "Done" action button on the notification to complete the first todo without opening the app
-- Todos persist across app restarts (SharedPreferences)
+- Reads todos from the Android calendar (DAVx5 "ToDo" calendar)
+- One notification card per todo — BC2-style grouped individual notifications
+- Notifications are restored automatically within ~3 seconds if dismissed (watchdog)
+- Tap a notification card to open the event in BC2 calendar app (fallback: system calendar)
+- **Delete** a todo directly from the notification card ("Delete" action button) or from the app's list view
+- Filters:
+  - **Also show ToDos from before 2026** toggle
+  - **Only show ToDos within ±1 week** toggle
+- Notifications update automatically when the calendar changes (ContentObserver)
 - Notification is automatically restored after device reboot
 - Clean Material 3 UI
 
-## How ongoing notifications work
+## How notification persistence works
 
-The notification uses `setOngoing(true)` via `NotificationCompat.Builder`. This flag prevents the user from dismissing the notification with a swipe. The notification stays visible until:
-- The app explicitly cancels it, or
-- The user force-stops the app from system settings
-
-On device reboot, `BootReceiver` re-posts the notification automatically.
+- A **foreground service** (`TodoForegroundService`) keeps a summary notification alive permanently.
+- Individual per-todo notifications use `setOngoing(true)` but can be dismissed on Android 14+.
+- A **watchdog** runs every 3 seconds: it checks `NotificationManager.getActiveNotifications()` and reposts any missing individual notifications via `nm.notify()`.
+- To avoid Android's notification rate-limiting, individual notifications are posted with a 250 ms stagger between each.
+- On device reboot, `BootReceiver` restarts the foreground service.
 
 ## Requirements
 
 - **Android 8.0+ (API 26+)**
 - Android Studio Hedgehog (2023.1.1) or newer
 - Android SDK with Build Tools 34
+- DAVx5 with a calendar named exactly **"ToDo"** synced to the device
 
 ## Setup
 
@@ -37,7 +42,7 @@ On device reboot, `BootReceiver` re-posts the notification automatically.
 
 3. **Build and run** on a device or emulator (API 26+).
 
-4. **Grant notification permission** when prompted (required on Android 13+).
+4. **Grant permissions** when prompted: Calendar (read + write) and Notifications.
 
 > **Note:** `local.properties` is generated automatically by Android Studio with your local SDK path. Do not commit it.
 
@@ -46,13 +51,15 @@ On device reboot, `BootReceiver` re-posts the notification automatically.
 ```
 app/src/main/
 ├── java/com/example/todonotifications/
-│   ├── TodoItem.kt                  # Data class
-│   ├── TodoPreferences.kt           # SharedPreferences storage
-│   ├── NotificationHelper.kt        # Builds and posts the ongoing notification
-│   ├── NotificationActionReceiver.kt # Handles notification button actions
-│   ├── BootReceiver.kt              # Restores notification after reboot
-│   ├── MainActivity.kt              # Main UI
-│   └── TodoAdapter.kt               # RecyclerView adapter
+│   ├── TodoItem.kt                   # Data class
+│   ├── CalendarTodoSource.kt         # Reads events from the "ToDo" calendar
+│   ├── AppPreferences.kt             # SharedPreferences for filter toggles
+│   ├── NotificationHelper.kt         # Builds summary + per-todo notifications
+│   ├── NotificationActionReceiver.kt # Handles ACTION_REPOST and ACTION_DELETE_TODO
+│   ├── TodoForegroundService.kt      # Foreground service + watchdog
+│   ├── BootReceiver.kt               # Restarts service after reboot
+│   ├── MainActivity.kt               # Main UI with filter toggles and delete
+│   └── TodoAdapter.kt                # RecyclerView adapter
 └── res/
     ├── layout/
     │   ├── activity_main.xml
@@ -61,12 +68,15 @@ app/src/main/
     │   ├── strings.xml
     │   ├── themes.xml
     │   └── colors.xml
-    └── drawable/                    # Vector icons
+    └── drawable/                     # Vector icons
 ```
 
 ## Permissions Used
 
 | Permission | Purpose |
 |---|---|
-| `POST_NOTIFICATIONS` | Show notifications (required to request at runtime on Android 13+) |
-| `RECEIVE_BOOT_COMPLETED` | Re-post notification after device reboot |
+| `READ_CALENDAR` | Read events from the "ToDo" calendar |
+| `WRITE_CALENDAR` | Delete events from app / notification |
+| `POST_NOTIFICATIONS` | Show notifications (required at runtime on Android 13+) |
+| `RECEIVE_BOOT_COMPLETED` | Restart notification service after reboot |
+| `FOREGROUND_SERVICE` | Keep the summary notification alive |

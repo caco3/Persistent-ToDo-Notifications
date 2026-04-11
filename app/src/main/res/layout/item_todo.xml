@@ -37,6 +37,15 @@
             android:textAppearance="@style/TextAppearance.Material3.BodySmall"
             android:textColor="?attr/colorOnSurfaceVariant" />
 
+        <ImageButton
+            android:id="@+id/btnDelete"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/delete_event"
+            android:src="@drawable/ic_delete" />
+
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

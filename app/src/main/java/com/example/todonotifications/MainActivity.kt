@@ -1,9 +1,11 @@
 package com.example.todonotifications
 
 import android.Manifest
+import android.content.ContentUris
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.CalendarContract
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -27,9 +29,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val calendarPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        if (granted) {
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        if (results[Manifest.permission.READ_CALENDAR] == true) {
             refreshTodos()
             startNotificationService()
         } else {
@@ -44,7 +46,10 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.subtitle = "build: ${BuildConfig.GIT_HASH}"
 
-        adapter = TodoAdapter { todo -> openTodoEvent(todo) }
+        adapter = TodoAdapter(
+            onItemClick = { todo -> openTodoEvent(todo) },
+            onDeleteClick = { todo -> confirmDeleteTodo(todo) }
+        )
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = adapter
 
@@ -100,18 +105,45 @@ class MainActivity : AppCompatActivity() {
                 PackageManager.PERMISSION_GRANTED
 
     private fun requestCalendarPermission() {
+        val perms = arrayOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)
         if (shouldShowRequestPermissionRationale(Manifest.permission.READ_CALENDAR)) {
             MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.permission_calendar_rationale_title)
                 .setMessage(R.string.permission_calendar_rationale_message)
                 .setPositiveButton(R.string.permission_grant) { _, _ ->
-                    calendarPermissionLauncher.launch(Manifest.permission.READ_CALENDAR)
+                    calendarPermissionLauncher.launch(perms)
                 }
                 .setNegativeButton(R.string.dialog_cancel, null)
                 .show()
         } else {
-            calendarPermissionLauncher.launch(Manifest.permission.READ_CALENDAR)
+            calendarPermissionLauncher.launch(perms)
         }
+    }
+
+    private fun hasWriteCalendarPermission() =
+        ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR) ==
+                PackageManager.PERMISSION_GRANTED
+
+    private fun confirmDeleteTodo(todo: TodoItem) {
+        if (!hasWriteCalendarPermission()) {
+            calendarPermissionLauncher.launch(
+                arrayOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)
+            )
+            return
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.delete_event_title)
+            .setMessage(getString(R.string.delete_event_message, todo.title))
+            .setPositiveButton(R.string.delete_confirm) { _, _ ->
+                val uri = ContentUris.withAppendedId(
+                    CalendarContract.Events.CONTENT_URI, todo.id.toLong()
+                )
+                contentResolver.delete(uri, null, null)
+                refreshTodos()
+                startNotificationService()
+            }
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .show()
     }
 
     private fun requestNotificationPermissionIfNeeded() {

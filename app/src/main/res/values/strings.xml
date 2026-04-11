@@ -7,6 +7,10 @@
     <string name="switch_show_old">Also show ToDos from before 2026</string>
     <string name="switch_near_only">Only show ToDos within ±1 week</string>
     <string name="dialog_cancel">Cancel</string>
+    <string name="delete_event">Delete event</string>
+    <string name="delete_event_title">Delete event?</string>
+    <string name="delete_event_message">Delete "%1$s"? This cannot be undone.</string>
+    <string name="delete_confirm">Delete</string>
 
     <!-- Notification channel -->
     <string name="notification_channel_name">Todo Reminders</string>
@@ -25,7 +29,7 @@
 
     <!-- Calendar permission -->
     <string name="permission_calendar_rationale_title">Calendar Permission Needed</string>
-    <string name="permission_calendar_rationale_message">This app reads events from your DAVx5-synced "Todo" calendar to display them as a persistent notification. No data is written — the app is read-only.</string>
+    <string name="permission_calendar_rationale_message">This app reads your DAVx5-synced "Todo" calendar to display events as a persistent notification. Write access is needed to delete events directly from the app.</string>
     <string name="permission_calendar_denied">Calendar permission denied. Cannot read the "Todo" calendar.</string>
 
     <plurals name="notification_title_count">

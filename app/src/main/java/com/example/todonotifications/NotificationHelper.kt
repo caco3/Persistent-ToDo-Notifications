@@ -109,10 +109,21 @@ object NotificationHelper {
     }
 
     fun buildTodoNotification(context: Context, todo: TodoItem): Notification {
+        val notifId = getNotificationIdForTodo(todo.id)
         val openEventIntent = PendingIntent.getActivity(
             context,
-            getNotificationIdForTodo(todo.id),
+            notifId,
             buildOpenEventIntent(context, todo.id),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val deleteIntent = PendingIntent.getBroadcast(
+            context,
+            notifId + 1,
+            Intent(context, NotificationActionReceiver::class.java).apply {
+                action = NotificationActionReceiver.ACTION_DELETE_TODO
+                putExtra(NotificationActionReceiver.EXTRA_TODO_ID, todo.id)
+                putExtra(NotificationActionReceiver.EXTRA_NOTIF_ID, notifId)
+            },
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
@@ -121,6 +132,7 @@ object NotificationHelper {
             .setAutoCancel(false)
             .setContentTitle(todo.title)
             .setContentIntent(openEventIntent)
+            .addAction(R.drawable.ic_delete, context.getString(R.string.delete_confirm), deleteIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
