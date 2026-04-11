@@ -1,5 +1,6 @@
 package com.example.todonotifications
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -27,9 +28,10 @@ object NotificationHelper {
     }
 
     fun postTodoNotification(context: Context) {
-        val notificationManager = NotificationManagerCompat.from(context)
-        if (!notificationManager.areNotificationsEnabled()) return
+        TodoForegroundService.startOrUpdate(context)
+    }
 
+    fun buildNotification(context: Context): Notification {
         val todos = TodoPreferences(context).getTodos()
         val pending = todos.filter { !it.isCompleted }
 
@@ -89,11 +91,7 @@ object NotificationHelper {
             builder.setStyle(style)
         }
 
-        try {
-            notificationManager.notify(NOTIFICATION_ID, builder.build())
-        } catch (e: SecurityException) {
-            // POST_NOTIFICATIONS permission not granted
-        }
+        return builder.build()
     }
 
     private fun buildCompleteAction(context: Context, todo: TodoItem): NotificationCompat.Action {
