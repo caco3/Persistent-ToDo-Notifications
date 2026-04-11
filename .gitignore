@@ -1,0 +1,35 @@
+# Generated build outputs
+build/
+app/build/
+*.apk
+*.aab
+*.ap_
+
+# Gradle cache & daemon
+.gradle/
+
+# Local machine config — never commit this
+local.properties
+
+# Android Studio / IntelliJ IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+captures/
+
+# Android Studio Navigation editor generated files
+app/src/main/res/navigation/
+
+# Signing keystores — keep out of version control
+*.jks
+*.keystore
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Crash logs
+*.hprof
+*.log

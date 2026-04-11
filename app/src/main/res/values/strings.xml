@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Todo Notifications</string>
+
+    <!-- Status bar -->
+    <string name="status_empty">No todos yet</string>
+    <string name="status_text">%1$d pending · %2$d done</string>
+    <string name="btn_clear_completed">Clear done</string>
+
+    <!-- FAB -->
+    <string name="fab_label">Add Todo</string>
+    <string name="fab_description">Add a new todo</string>
+
+    <!-- Dialog -->
+    <string name="dialog_title">New Todo</string>
+    <string name="dialog_hint">What do you need to do?</string>
+    <string name="dialog_add">Add</string>
+    <string name="dialog_cancel">Cancel</string>
+
+    <!-- Item accessibility -->
+    <string name="checkbox_description">Mark as complete</string>
+    <string name="btn_delete_description">Delete todo</string>
+
+    <!-- Notification channel -->
+    <string name="notification_channel_name">Todo Reminders</string>
+    <string name="notification_channel_description">Persistent ongoing todo list in your notification shade</string>
+
+    <!-- Notification content -->
+    <string name="notification_title_done">All done!</string>
+    <string name="notification_text_done">No pending todos. Tap to add one.</string>
+    <string name="notification_more">+%1$d more</string>
+
+    <!-- Notification actions -->
+    <string name="action_complete">Done: %1$s</string>
+    <string name="action_add_todo">+ Add</string>
+
+    <!-- Permission -->
+    <string name="permission_rationale_title">Notification Permission Needed</string>
+    <string name="permission_rationale_message">This app shows your todos as persistent notifications in the notification shade so they\'re always visible. Please grant notification permission to enable this feature.</string>
+    <string name="permission_grant">Grant</string>
+    <string name="permission_denied_message">Notification permission denied. Todos won\'t appear as persistent notifications.</string>
+
+    <plurals name="notification_title_count">
+        <item quantity="one">%1$d pending todo</item>
+        <item quantity="other">%1$d pending todos</item>
+    </plurals>
+</resources>
