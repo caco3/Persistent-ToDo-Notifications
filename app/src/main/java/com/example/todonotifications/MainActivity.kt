@@ -16,6 +16,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: TodoAdapter
+    private var updatingFilters = false
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -49,16 +50,30 @@ class MainActivity : AppCompatActivity() {
 
         binding.switchShowOld.isChecked = AppPreferences.getShowOldEvents(this)
         binding.switchShowOld.setOnCheckedChangeListener { _, checked ->
+            if (updatingFilters) return@setOnCheckedChangeListener
+            updatingFilters = true
+            if (checked) {
+                binding.switchNearOnly.isChecked = false
+                AppPreferences.setNearOnly(this, false)
+            }
             AppPreferences.setShowOldEvents(this, checked)
             if (hasCalendarPermission()) refreshTodos(scrollToTop = true)
             startNotificationService()
+            updatingFilters = false
         }
 
         binding.switchNearOnly.isChecked = AppPreferences.getNearOnly(this)
         binding.switchNearOnly.setOnCheckedChangeListener { _, checked ->
+            if (updatingFilters) return@setOnCheckedChangeListener
+            updatingFilters = true
+            if (checked) {
+                binding.switchShowOld.isChecked = false
+                AppPreferences.setShowOldEvents(this, false)
+            }
             AppPreferences.setNearOnly(this, checked)
             if (hasCalendarPermission()) refreshTodos(scrollToTop = true)
             startNotificationService()
+            updatingFilters = false
         }
 
         checkPermissionsAndStart()

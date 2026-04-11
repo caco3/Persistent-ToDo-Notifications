@@ -17,10 +17,19 @@ class TodoForegroundService : Service() {
     private var calendarObserver: ContentObserver? = null
     private val activeNotifIds = mutableSetOf<Int>()
     private val handler = Handler(Looper.getMainLooper())
-    private val updateRunnable = Runnable { updateNotifications() }
+
+    private val calendarUpdateRunnable = Runnable { updateNotifications() }
+
+    private val watchdogRunnable = object : Runnable {
+        override fun run() {
+            repostMissing()
+            handler.postDelayed(this, WATCHDOG_MS)
+        }
+    }
 
     companion object {
-        private const val DEBOUNCE_MS = 200L
+        private const val CALENDAR_DEBOUNCE_MS = 500L
+        private const val WATCHDOG_MS = 3_000L
 
         fun startOrUpdate(context: Context) {
             ContextCompat.startForegroundService(
@@ -28,27 +37,36 @@ class TodoForegroundService : Service() {
                 Intent(context, TodoForegroundService::class.java)
             )
         }
-
-        fun scheduleRepost(context: Context) = startOrUpdate(context)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        scheduleUpdate()
+        updateNotifications()
         registerCalendarObserver()
+        startWatchdog()
         return START_STICKY
     }
 
-    private fun scheduleUpdate() {
-        handler.removeCallbacks(updateRunnable)
-        handler.postDelayed(updateRunnable, DEBOUNCE_MS)
+    private fun startWatchdog() {
+        handler.removeCallbacks(watchdogRunnable)
+        handler.postDelayed(watchdogRunnable, WATCHDOG_MS)
+    }
+
+    private fun repostMissing() {
+        if (activeNotifIds.isEmpty()) return
+        val nm = getSystemService(NotificationManager::class.java)
+        val visibleIds = nm.activeNotifications.map { it.id }.toSet()
+        if (activeNotifIds.all { it in visibleIds }) return
+        updateNotifications()
     }
 
     private fun updateNotifications() {
         val todos = CalendarTodoSource.getTodos(this)
         val nm = getSystemService(NotificationManager::class.java)
 
-        val summary = NotificationHelper.buildSummaryNotification(this, todos)
-        startForeground(NotificationHelper.NOTIFICATION_ID_SUMMARY, summary)
+        startForeground(
+            NotificationHelper.NOTIFICATION_ID_SUMMARY,
+            NotificationHelper.buildSummaryNotification(this, todos)
+        )
 
         val newIds = mutableSetOf<Int>()
         todos.forEach { todo ->
@@ -66,7 +84,8 @@ class TodoForegroundService : Service() {
         if (calendarObserver != null) return
         calendarObserver = object : ContentObserver(handler) {
             override fun onChange(selfChange: Boolean, uri: Uri?) {
-                scheduleUpdate()
+                handler.removeCallbacks(calendarUpdateRunnable)
+                handler.postDelayed(calendarUpdateRunnable, CALENDAR_DEBOUNCE_MS)
             }
         }.also { observer ->
             contentResolver.registerContentObserver(
@@ -78,7 +97,8 @@ class TodoForegroundService : Service() {
     }
 
     override fun onDestroy() {
-        handler.removeCallbacks(updateRunnable)
+        handler.removeCallbacks(calendarUpdateRunnable)
+        handler.removeCallbacks(watchdogRunnable)
         calendarObserver?.let { contentResolver.unregisterContentObserver(it) }
         calendarObserver = null
         super.onDestroy()

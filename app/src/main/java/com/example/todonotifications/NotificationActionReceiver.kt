@@ -12,7 +12,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == ACTION_REPOST) {
-            TodoForegroundService.scheduleRepost(context)
+            TodoForegroundService.startOrUpdate(context)
         }
     }
 }
