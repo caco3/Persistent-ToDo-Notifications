@@ -42,6 +42,7 @@ class TodoForegroundService : Service() {
         val newIds = mutableSetOf<Int>()
         todos.forEach { todo ->
             val id = NotificationHelper.getNotificationIdForTodo(todo.id)
+            nm.cancel(id)
             nm.notify(id, NotificationHelper.buildTodoNotification(this, todo))
             newIds.add(id)
         }
