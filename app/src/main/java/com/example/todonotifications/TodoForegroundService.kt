@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat
 class TodoForegroundService : Service() {
 
     private var calendarObserver: ContentObserver? = null
+    private val activeNotifIds = mutableSetOf<Int>()
 
     companion object {
         fun startOrUpdate(context: Context) {
@@ -26,10 +27,28 @@ class TodoForegroundService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val notification = NotificationHelper.buildNotification(this)
-        startForeground(NotificationHelper.NOTIFICATION_ID, notification)
+        updateNotifications()
         registerCalendarObserver()
         return START_STICKY
+    }
+
+    private fun updateNotifications() {
+        val todos = CalendarTodoSource.getTodos(this)
+        val nm = getSystemService(NotificationManager::class.java)
+
+        val summary = NotificationHelper.buildSummaryNotification(this, todos)
+        startForeground(NotificationHelper.NOTIFICATION_ID_SUMMARY, summary)
+
+        val newIds = mutableSetOf<Int>()
+        todos.forEach { todo ->
+            val id = NotificationHelper.getNotificationIdForTodo(todo.id)
+            nm.notify(id, NotificationHelper.buildTodoNotification(this, todo))
+            newIds.add(id)
+        }
+
+        (activeNotifIds - newIds).forEach { nm.cancel(it) }
+        activeNotifIds.clear()
+        activeNotifIds.addAll(newIds)
     }
 
     private fun registerCalendarObserver() {
@@ -37,9 +56,7 @@ class TodoForegroundService : Service() {
         val handler = Handler(Looper.getMainLooper())
         calendarObserver = object : ContentObserver(handler) {
             override fun onChange(selfChange: Boolean, uri: Uri?) {
-                val updated = NotificationHelper.buildNotification(this@TodoForegroundService)
-                getSystemService(NotificationManager::class.java)
-                    .notify(NotificationHelper.NOTIFICATION_ID, updated)
+                updateNotifications()
             }
         }.also { observer ->
             contentResolver.registerContentObserver(

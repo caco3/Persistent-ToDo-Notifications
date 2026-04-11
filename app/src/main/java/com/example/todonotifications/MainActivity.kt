@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         binding.switchShowOld.isChecked = AppPreferences.getShowOldEvents(this)
         binding.switchShowOld.setOnCheckedChangeListener { _, checked ->
             AppPreferences.setShowOldEvents(this, checked)
-            if (hasCalendarPermission()) refreshTodos()
+            if (hasCalendarPermission()) refreshTodos(scrollToTop = true)
             startNotificationService()
         }
 
@@ -119,9 +119,11 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun refreshTodos() {
+    private fun refreshTodos(scrollToTop: Boolean = false) {
         val todos = CalendarTodoSource.getTodos(this)
-        adapter.submitList(todos)
+        adapter.submitList(todos) {
+            if (scrollToTop) binding.recyclerView.scrollToPosition(0)
+        }
         binding.textStatus.text = if (todos.isEmpty())
             getString(R.string.status_empty)
         else
