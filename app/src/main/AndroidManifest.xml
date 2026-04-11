@@ -42,6 +42,7 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="com.example.todonotifications.ACTION_COMPLETE" />
+                <action android:name="com.example.todonotifications.ACTION_REPOST" />
             </intent-filter>
         </receiver>
 

@@ -44,14 +44,25 @@ object NotificationHelper {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
+        val repostIntent = PendingIntent.getBroadcast(
+            context,
+            997,
+            Intent(context, NotificationActionReceiver::class.java).apply {
+                action = NotificationActionReceiver.ACTION_REPOST
+            },
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setOngoing(true)
             .setAutoCancel(false)
             .setContentIntent(openAppIntent)
+            .setDeleteIntent(repostIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setSubText("build: ${BuildConfig.GIT_HASH}")
 
         val addAction = buildAddAction(context)
 
