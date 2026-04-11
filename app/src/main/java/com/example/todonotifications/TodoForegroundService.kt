@@ -68,16 +68,19 @@ class TodoForegroundService : Service() {
             NotificationHelper.buildSummaryNotification(this, todos)
         )
 
-        val newIds = mutableSetOf<Int>()
-        todos.forEach { todo ->
-            val id = NotificationHelper.getNotificationIdForTodo(todo.id)
-            nm.notify(id, NotificationHelper.buildTodoNotification(this, todo))
-            newIds.add(id)
-        }
+        val newIds = todos.map { NotificationHelper.getNotificationIdForTodo(it.id) }.toSet()
 
         (activeNotifIds - newIds).forEach { nm.cancel(it) }
         activeNotifIds.clear()
         activeNotifIds.addAll(newIds)
+
+        todos.forEachIndexed { index, todo ->
+            val id = NotificationHelper.getNotificationIdForTodo(todo.id)
+            handler.postDelayed(
+                { nm.notify(id, NotificationHelper.buildTodoNotification(this, todo)) },
+                index * 30L
+            )
+        }
     }
 
     private fun registerCalendarObserver() {

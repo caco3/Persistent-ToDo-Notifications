@@ -149,6 +149,6 @@ class MainActivity : AppCompatActivity() {
         binding.textStatus.text = if (todos.isEmpty())
             getString(R.string.status_empty)
         else
-            resources.getQuantityString(R.plurals.notification_title_count, todos.size, todos.size)
+            resources.getQuantityString(R.plurals.notification_title_count, todos.size, todos.size) + ":"
     }
 }
