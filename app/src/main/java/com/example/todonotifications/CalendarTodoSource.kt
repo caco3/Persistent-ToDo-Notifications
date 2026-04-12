@@ -91,7 +91,7 @@ object CalendarTodoSource {
                 if (todo.isRecurring && next != null) todo.copy(dtStart = next) else todo
             }
             todos.clear()
-            todos.addAll(updated)
+            todos.addAll(updated.sortedBy { it.dtStart })
         }
 
         if (ignoreFilters) return todos
