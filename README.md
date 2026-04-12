@@ -42,17 +42,29 @@ An Android app that reads events from a DAVx5-synced **"ToDo" calendar** and dis
 
 ## Settings
 
-Accessible via the **⋮ overflow menu** in the toolbar:
+Accessible via the **⋮ overflow menu → Settings** and the **About** item in the toolbar.
+
+**Filters**
 
 | Setting | Description |
 |---|---|
 | Show ToDos from <2026 | Include events with a start date before 2026 |
 | Show ToDos within ±1 week | Narrow the list to events within 7 days of today |
 | Show ToDos within ±1 month | Narrow the list to events within 30 days of today |
-| Demo mode | Show synthetic dummy todos — no calendar required (useful for screenshots) |
-| About | App version, build hash, and link to source repository |
 
 Only one time-range filter can be active at a time; enabling one clears the others.
+
+**Calendar**
+
+| Setting | Description |
+|---|---|
+| Calendar name | Display name of the Android calendar to read todos from (case-sensitive, default: `ToDo`) |
+
+**Development**
+
+| Setting | Description |
+|---|---|
+| Demo mode | Show synthetic dummy todos — no calendar required (useful for screenshots/testing) |
 
 ## Setup
 
