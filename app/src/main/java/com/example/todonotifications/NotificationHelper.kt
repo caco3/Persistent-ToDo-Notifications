@@ -126,18 +126,40 @@ object NotificationHelper {
             },
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
+        val snoozeIntent = PendingIntent.getActivity(
+            context,
+            notifId + 2,
+            Intent(context, SnoozePickerActivity::class.java).apply {
+                putExtra(NotificationActionReceiver.EXTRA_TODO_ID, todo.id)
+                putExtra(NotificationActionReceiver.EXTRA_NOTIF_ID, notifId)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            },
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setOngoing(true)
             .setAutoCancel(false)
             .setContentTitle(todo.title)
             .setContentIntent(openEventIntent)
+            .addAction(R.drawable.ic_snooze, context.getString(R.string.snooze_button), snoozeIntent)
             .apply {
-                if (todo.isRecurring) addAction(
-                    R.drawable.ic_recurring, context.getString(R.string.recurring_event), openEventIntent
-                ) else addAction(
-                    R.drawable.ic_delete, context.getString(R.string.delete_confirm), deleteIntent
-                )
+                if (todo.isRecurring) {
+                    val doneIntent = PendingIntent.getBroadcast(
+                        context,
+                        notifId + 3,
+                        Intent(context, NotificationActionReceiver::class.java).apply {
+                            action = NotificationActionReceiver.ACTION_DONE_RECURRING
+                            putExtra(NotificationActionReceiver.EXTRA_TODO_ID, todo.id)
+                            putExtra(NotificationActionReceiver.EXTRA_NOTIF_ID, notifId)
+                            putExtra(NotificationActionReceiver.EXTRA_DT_START, todo.dtStart)
+                        },
+                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                    )
+                    addAction(R.drawable.ic_check, context.getString(R.string.done_recurring), doneIntent)
+                } else {
+                    addAction(R.drawable.ic_delete, context.getString(R.string.delete_confirm), deleteIntent)
+                }
             }
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)

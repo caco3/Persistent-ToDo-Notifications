@@ -62,7 +62,9 @@ class MainActivity : AppCompatActivity() {
 
         adapter = TodoAdapter(
             onItemClick = { todo -> openTodoEvent(todo) },
-            onDeleteClick = { todo -> confirmDeleteTodo(todo) }
+            onDeleteClick = { todo -> confirmDeleteTodo(todo) },
+            onSnoozeClick = { todo -> showSnoozeDialog(todo) },
+            onDoneClick = { todo -> markRecurringDone(todo) }
         )
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = adapter
@@ -214,6 +216,39 @@ class MainActivity : AppCompatActivity() {
 
     private fun startNotificationService() {
         NotificationHelper.postTodoNotification(this)
+    }
+
+    private fun showSnoozeDialog(todo: TodoItem) {
+        val options = arrayOf(
+            getString(R.string.snooze_1day),
+            getString(R.string.snooze_3days),
+            getString(R.string.snooze_1week),
+            getString(R.string.snooze_1month)
+        )
+        val durations = longArrayOf(
+            1 * 24 * 60 * 60 * 1000L,
+            3 * 24 * 60 * 60 * 1000L,
+            7 * 24 * 60 * 60 * 1000L,
+            30 * 24 * 60 * 60 * 1000L
+        )
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.snooze_title)
+            .setItems(options) { _, which ->
+                AppPreferences.snoozeTodo(this, todo.id, durations[which])
+                NotificationActionReceiver.scheduleSnoozeWakeup(this, durations[which])
+                startNotificationService()
+                refreshTodos()
+            }
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .show()
+    }
+
+    private fun markRecurringDone(todo: TodoItem) {
+        val snoozeMs = NotificationActionReceiver.doneUntilMs(todo.dtStart)
+        AppPreferences.snoozeTodo(this, todo.id, snoozeMs)
+        NotificationActionReceiver.scheduleSnoozeWakeup(this, snoozeMs)
+        startNotificationService()
+        refreshTodos()
     }
 
     private fun openTodoEvent(todo: TodoItem) {

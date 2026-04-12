@@ -56,4 +56,55 @@ object AppPreferences {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .edit().putString(KEY_CALENDAR_NAME, value.trim()).apply()
     }
+
+    private const val KEY_SNOOZED_TODOS = "snoozed_todos"
+
+    fun snoozeTodo(context: Context, todoId: String, durationMs: Long) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val existing = prefs.getStringSet(KEY_SNOOZED_TODOS, emptySet())!!.toMutableSet()
+        existing.removeAll { it.startsWith("$todoId:") }
+        val expiry = System.currentTimeMillis() + durationMs
+        existing.add("$todoId:$expiry")
+        prefs.edit().putStringSet(KEY_SNOOZED_TODOS, existing).apply()
+    }
+
+    fun clearSnooze(context: Context, todoId: String) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val existing = prefs.getStringSet(KEY_SNOOZED_TODOS, emptySet())!!.toMutableSet()
+        existing.removeAll { it.startsWith("$todoId:") }
+        prefs.edit().putStringSet(KEY_SNOOZED_TODOS, existing).apply()
+    }
+
+    fun isSnoozed(context: Context, todoId: String): Boolean {
+        val now = System.currentTimeMillis()
+        val snoozed = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getStringSet(KEY_SNOOZED_TODOS, emptySet()) ?: return false
+        return snoozed.any { entry ->
+            val parts = entry.split(":", limit = 2)
+            parts.size == 2 && parts[0] == todoId && (parts[1].toLongOrNull() ?: 0L) > now
+        }
+    }
+
+    fun clearExpiredSnoozes(context: Context) {
+        val now = System.currentTimeMillis()
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val existing = prefs.getStringSet(KEY_SNOOZED_TODOS, emptySet())!!.toMutableSet()
+        val cleaned = existing.filterTo(mutableSetOf()) { entry ->
+            val parts = entry.split(":", limit = 2)
+            parts.size == 2 && (parts[1].toLongOrNull() ?: 0L) > now
+        }
+        if (cleaned.size != existing.size) {
+            prefs.edit().putStringSet(KEY_SNOOZED_TODOS, cleaned).apply()
+        }
+    }
+
+    fun getNextSnoozeExpiry(context: Context): Long? {
+        val now = System.currentTimeMillis()
+        val snoozed = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getStringSet(KEY_SNOOZED_TODOS, emptySet()) ?: return null
+        return snoozed.mapNotNull { entry ->
+            val parts = entry.split(":", limit = 2)
+            if (parts.size == 2) parts[1].toLongOrNull() else null
+        }.filter { it > now }.minOrNull()
+    }
 }

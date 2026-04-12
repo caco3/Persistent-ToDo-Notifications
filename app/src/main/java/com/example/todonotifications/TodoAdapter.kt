@@ -11,7 +11,9 @@ import java.util.Date
 
 class TodoAdapter(
     private val onItemClick: (TodoItem) -> Unit,
-    private val onDeleteClick: (TodoItem) -> Unit
+    private val onDeleteClick: (TodoItem) -> Unit,
+    private val onSnoozeClick: (TodoItem) -> Unit,
+    private val onDoneClick: (TodoItem) -> Unit
 ) : ListAdapter<TodoItem, TodoAdapter.ViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -30,11 +32,13 @@ class TodoAdapter(
 
         fun bind(todo: TodoItem) {
             binding.root.setOnClickListener { onItemClick(todo) }
+            binding.btnSnooze.setOnClickListener { onSnoozeClick(todo) }
             if (todo.isRecurring) {
-                binding.iconRecurring.visibility = android.view.View.VISIBLE
+                binding.btnDone.visibility = android.view.View.VISIBLE
+                binding.btnDone.setOnClickListener { onDoneClick(todo) }
                 binding.btnDelete.visibility = android.view.View.GONE
             } else {
-                binding.iconRecurring.visibility = android.view.View.GONE
+                binding.btnDone.visibility = android.view.View.GONE
                 binding.btnDelete.visibility = android.view.View.VISIBLE
                 binding.btnDelete.setOnClickListener { onDeleteClick(todo) }
             }

@@ -51,6 +51,15 @@
     <string name="permission_calendar_rationale_message">This app reads your DAVx5-synced "Todo" calendar to display events as a persistent notification. Write access is needed to delete events directly from the app.</string>
     <string name="permission_calendar_denied">Calendar permission denied. Cannot read the "Todo" calendar.</string>
 
+    <string name="snooze_button">Snooze</string>
+    <string name="done_recurring">Done</string>
+    <string name="snooze_title">Snooze for how long?</string>
+    <string name="snooze_1day">1 day</string>
+    <string name="snooze_3days">3 days</string>
+    <string name="snooze_1week">1 week</string>
+    <string name="snooze_1month">1 month</string>
+    <string name="snooze_1d">Snooze 1d</string>
+
     <plurals name="notification_title_count">
         <item quantity="one">%1$d todo</item>
         <item quantity="other">%1$d todos</item>

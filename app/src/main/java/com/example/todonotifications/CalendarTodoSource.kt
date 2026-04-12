@@ -107,7 +107,10 @@ object CalendarTodoSource {
         val dayMs = 24L * 60 * 60 * 1000
         val beforeMs = AppPreferences.getDaysBefore(context) * dayMs
         val afterMs  = AppPreferences.getDaysAfter(context)  * dayMs
-        return filtered.filter { it.isRecurring || it.dtStart in (now - beforeMs)..(now + afterMs) }
+        val rangeFiltered = filtered.filter { it.dtStart in (now - beforeMs)..(now + afterMs) }
+
+        AppPreferences.clearExpiredSnoozes(context)
+        return rangeFiltered.filter { !AppPreferences.isSnoozed(context, it.id) }
     }
 
     fun findCalendarIds(context: Context): List<Long> {

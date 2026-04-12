@@ -33,6 +33,13 @@
             android:exported="false"
             android:parentActivityName=".MainActivity" />
 
+        <activity
+            android:name=".SnoozePickerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Material3.DayNight.Dialog"
+            android:taskAffinity=""
+            android:excludeFromRecents="true" />
+
         <property
             android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
             android:value="Persistent todo list visible in the notification shade" />
@@ -51,6 +58,8 @@
             <intent-filter>
                 <action android:name="com.example.todonotifications.ACTION_REPOST" />
                 <action android:name="com.example.todonotifications.ACTION_DELETE_TODO" />
+                <action android:name="com.example.todonotifications.ACTION_SNOOZE_TODO" />
+                <action android:name="com.example.todonotifications.ACTION_DONE_RECURRING" />
             </intent-filter>
         </receiver>
 
