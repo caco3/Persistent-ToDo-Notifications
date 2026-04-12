@@ -105,10 +105,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        contentResolver.registerContentObserver(
-            CalendarContract.Events.CONTENT_URI, true, calendarObserver
-        )
-        if (hasCalendarPermission()) refreshTodos()
+        if (hasCalendarPermission()) {
+            contentResolver.registerContentObserver(
+                CalendarContract.Events.CONTENT_URI, true, calendarObserver
+            )
+            refreshTodos()
+        }
     }
 
     override fun onPause() {
