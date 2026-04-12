@@ -40,6 +40,11 @@
     <string name="permission_grant">Grant</string>
     <string name="permission_denied_message">Notification permission denied. Todos won\'t appear as a persistent notification.</string>
 
+    <!-- Battery optimization -->
+    <string name="battery_opt_title">Disable Battery Optimization</string>
+    <string name="battery_opt_message">To ensure todos appear after a reboot, this app needs to be excluded from battery optimization. Please tap "Allow" on the next screen.</string>
+    <string name="battery_opt_allow">Allow</string>
+
     <!-- Calendar permission -->
     <string name="permission_calendar_rationale_title">Calendar Permission Needed</string>
     <string name="permission_calendar_rationale_message">This app reads your DAVx5-synced "Todo" calendar to display events as a persistent notification. Write access is needed to delete events directly from the app.</string>

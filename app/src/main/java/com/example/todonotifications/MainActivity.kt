@@ -4,10 +4,13 @@ import android.Manifest
 import android.content.ContentUris
 import android.content.pm.PackageManager
 import android.database.ContentObserver
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
+import android.provider.Settings
 import android.provider.CalendarContract
 import android.view.Menu
 import android.view.MenuItem
@@ -118,6 +121,7 @@ class MainActivity : AppCompatActivity() {
         refreshTodos()
         NotificationHelper.createNotificationChannel(this)
         requestNotificationPermissionIfNeeded()
+        requestBatteryOptimizationExemption()
         startNotificationService()
     }
 
@@ -183,6 +187,24 @@ class MainActivity : AppCompatActivity() {
         } else {
             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
+    }
+
+    private fun requestBatteryOptimizationExemption() {
+        val pm = getSystemService(PowerManager::class.java)
+        if (pm.isIgnoringBatteryOptimizations(packageName)) return
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.battery_opt_title)
+            .setMessage(R.string.battery_opt_message)
+            .setPositiveButton(R.string.battery_opt_allow) { _, _ ->
+                startActivity(
+                    android.content.Intent(
+                        Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                        Uri.parse("package:$packageName")
+                    )
+                )
+            }
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .show()
     }
 
     private fun startNotificationService() {
