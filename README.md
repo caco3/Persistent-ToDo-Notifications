@@ -38,43 +38,84 @@ An Android app that reads events from a DAVx5-synced **"ToDo" calendar** and dis
 ## Requirements
 
 - **Android 8.0+ (API 26+)**
-- Android Studio Hedgehog (2023.1.1) or newer
-- Android SDK with Build Tools 34
+- Android SDK with Build Tools 34 (installed automatically by `build.sh`, or via Android Studio)
+- JDK 17+ (for `build.sh`)
 - DAVx5 with a calendar named exactly **"ToDo"** synced to the device
+
+## Settings
+
+Accessible via the **⋮ overflow menu** in the toolbar:
+
+| Setting | Description |
+|---|---|
+| Show ToDos from <2026 | Include events with a start date before 2026 |
+| Show ToDos within ±1 week | Narrow the list to events within 7 days of today |
+| Show ToDos within ±1 month | Narrow the list to events within 30 days of today |
+| Demo mode | Show synthetic dummy todos — no calendar required (useful for screenshots) |
+| About | App version, build hash, and link to source repository |
+
+Only one time-range filter can be active at a time; enabling one clears the others.
 
 ## Setup
 
-1. **Open in Android Studio:**
-   ```
-   File → Open → select the TodoNotifications folder
-   ```
+### Option A — Android Studio
 
-2. **Sync Gradle:** Android Studio will prompt to sync — click "Sync Now".
-
+1. **Open in Android Studio:** `File → Open → select the TodoNotifications folder`
+2. **Sync Gradle:** click "Sync Now" when prompted.
 3. **Build and run** on a device or emulator (API 26+).
-
 4. **Grant permissions** when prompted: Calendar (read + write) and Notifications.
 
-> **Note:** `local.properties` is generated automatically by Android Studio with your local SDK path. Do not commit it.
+> `local.properties` is generated automatically by Android Studio. Do not commit it.
+
+### Option B — `build.sh` (no Android Studio required)
+
+`build.sh` downloads all required SDK components and builds the APK entirely from the command line.
+
+**Prerequisites:** `java` (JDK 17+), `curl`, `unzip`
+
+```bash
+# Build debug APK
+./build.sh
+
+# Build and immediately flash to a connected device via adb
+./build.sh -f
+```
+
+What the script does (each step is skipped on subsequent runs if already done):
+
+1. Downloads Android command-line tools → `~/android-sdk`
+2. Accepts SDK licences
+3. Installs `platforms;android-34`, `build-tools;34.0.0`, `platform-tools`
+4. Downloads Gradle 8.4 → `~/.gradle-dist/gradle-8.4`
+5. Generates a `./gradlew` wrapper for future manual use
+6. Writes `local.properties` pointing to the SDK
+7. Builds `app/build/outputs/apk/debug/*.apk`
+
+With `-f`, the script also runs `adb install -r <apk>` to flash the built APK onto a connected device or emulator.
 
 ## Project Structure
 
 ```
+build.sh                              # CLI build + flash script (no Android Studio needed)
 app/src/main/
 ├── java/com/example/todonotifications/
-│   ├── TodoItem.kt                   # Data class
+│   ├── TodoItem.kt                   # Data class (id, title, dtStart, isRecurring)
 │   ├── CalendarTodoSource.kt         # Reads events from the "ToDo" calendar
-│   ├── AppPreferences.kt             # SharedPreferences for filter toggles
+│   ├── AppPreferences.kt             # SharedPreferences for filter/settings toggles
 │   ├── NotificationHelper.kt         # Builds summary + per-todo notifications
 │   ├── NotificationActionReceiver.kt # Handles ACTION_REPOST and ACTION_DELETE_TODO
-│   ├── TodoForegroundService.kt      # Foreground service + watchdog
+│   ├── TodoForegroundService.kt      # Foreground service + 3s watchdog
 │   ├── BootReceiver.kt               # Restarts service after reboot
-│   ├── MainActivity.kt               # Main UI with filter toggles and delete
+│   ├── MainActivity.kt               # Main UI (list, overflow menu)
+│   ├── SettingsActivity.kt           # Settings screen (filters, demo mode)
 │   └── TodoAdapter.kt                # RecyclerView adapter
 └── res/
     ├── layout/
     │   ├── activity_main.xml
+    │   ├── activity_settings.xml
     │   └── item_todo.xml
+    ├── menu/
+    │   └── menu_main.xml             # Overflow menu items
     ├── values/
     │   ├── strings.xml
     │   ├── themes.xml
