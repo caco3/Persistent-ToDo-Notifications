@@ -64,7 +64,11 @@ Only one time-range filter can be active at a time; enabling one clears the othe
 | Demo mode | Show synthetic dummy todos — no calendar required (useful for screenshots/testing) |
 
 ## Installation
-xxx
+
+1. Download the latest APK from the [Releases](https://github.com/caco3/Persistent-ToDo-Notifications/releases) page.
+2. On your device, enable **Install from unknown sources** (Settings → Apps → Special app access) if not already allowed.
+3. Open the downloaded `.apk` to install.
+4. Grant **Calendar** and **Notification** permissions when prompted.
 
 ## Development
 
