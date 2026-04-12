@@ -29,12 +29,23 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build debug APK
-        run: ./gradlew assembleDebug --stacktrace
+      - name: Build release APK
+        run: ./gradlew assembleRelease --stacktrace
 
-      - name: Upload debug APK
+      - name: Rename APK
+        run: |
+          TAG=$(git describe --tags --exact-match HEAD 2>/dev/null || true)
+          if [ -n "$TAG" ]; then
+            NAME="TodoNotifications-${TAG}.apk"
+          else
+            NAME="TodoNotifications.apk"
+          fi
+          mv app/build/outputs/apk/release/*.apk "app/build/outputs/apk/release/${NAME}"
+          echo "APK_NAME=${NAME}" >> $GITHUB_ENV
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
-          path: app/build/outputs/apk/debug/*.apk
+          name: TodoNotifications
+          path: app/build/outputs/apk/release/${{ env.APK_NAME }}
           retention-days: 14
