@@ -21,11 +21,9 @@ An Android app that reads events from a DAVx5-synced **"ToDo" calendar** and dis
 
 ## Screenshots
 
-| App list view | Notifications (collapsed) | Notifications (expanded) |
-|:---:|:---:|:---:|
-| ![App list](screenshots/app_list.png) | ![Notifications collapsed](screenshots/notif_collapsed.png) | ![Notifications expanded](screenshots/notif_expanded.png) |
-
-> Place your screenshots in the `screenshots/` folder with the filenames above.
+| App list view | Settings | Notifications (collapsed) | Notifications (expanded) |
+|:---:|:---:|:---:|:---:|
+| ![App list](screenshots/main%20screen.jpg) | ![Settings](screenshots/settings.jpg) | ![Collapsed](screenshots/collapsed%20notifications.jpg) | ![Expanded](screenshots/expanded%20notifications.jpg) |
 
 ## How notification persistence works
 
