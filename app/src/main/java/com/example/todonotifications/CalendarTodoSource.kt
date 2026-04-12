@@ -65,6 +65,35 @@ object CalendarTodoSource {
             }
         }
 
+        val recurringIds = todos.filter { it.isRecurring }.map { it.id }.toSet()
+        if (recurringIds.isNotEmpty()) {
+            val now = System.currentTimeMillis()
+            val instanceUri = CalendarContract.Instances.CONTENT_URI.buildUpon()
+                .appendPath(now.toString())
+                .appendPath((now + 365L * 24 * 60 * 60 * 1000).toString())
+                .build()
+            val nextInstanceMap = mutableMapOf<String, Long>()
+            context.contentResolver.query(
+                instanceUri,
+                arrayOf(CalendarContract.Instances.EVENT_ID, CalendarContract.Instances.BEGIN),
+                null, null,
+                "${CalendarContract.Instances.BEGIN} ASC"
+            )?.use { c ->
+                val eidCol   = c.getColumnIndexOrThrow(CalendarContract.Instances.EVENT_ID)
+                val beginCol = c.getColumnIndexOrThrow(CalendarContract.Instances.BEGIN)
+                while (c.moveToNext()) {
+                    val eid = c.getLong(eidCol).toString()
+                    if (eid in recurringIds) nextInstanceMap.putIfAbsent(eid, c.getLong(beginCol))
+                }
+            }
+            val updated = todos.map { todo ->
+                val next = nextInstanceMap[todo.id]
+                if (todo.isRecurring && next != null) todo.copy(dtStart = next) else todo
+            }
+            todos.clear()
+            todos.addAll(updated)
+        }
+
         if (ignoreFilters) return todos
 
         val showOld = AppPreferences.getShowOldEvents(context)
