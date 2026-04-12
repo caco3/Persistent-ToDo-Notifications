@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Todo Notifications</string>
+    <string name="app_name">Persistent ToDo Notifications</string>
 
     <!-- Status bar -->
     <string name="status_empty">No events found in the "Todo" calendar</string>
