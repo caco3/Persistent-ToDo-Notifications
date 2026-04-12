@@ -72,18 +72,13 @@ object CalendarTodoSource {
             set(2026, Calendar.JANUARY, 1, 0, 0, 0)
             set(Calendar.MILLISECOND, 0)
         }.timeInMillis
-        val filtered = if (showOld) todos else todos.filter { it.dtStart >= jan2026 }
+        val filtered = if (showOld) todos else todos.filter { it.isRecurring || it.dtStart >= jan2026 }
 
         val now = System.currentTimeMillis()
-        if (AppPreferences.getNearOnly(context)) {
-            val oneWeekMs = 7L * 24 * 60 * 60 * 1000
-            return filtered.filter { it.dtStart in (now - oneWeekMs)..(now + oneWeekMs) }
-        }
-        if (AppPreferences.getMonthOnly(context)) {
-            val oneMonthMs = 30L * 24 * 60 * 60 * 1000
-            return filtered.filter { it.dtStart in (now - oneMonthMs)..(now + oneMonthMs) }
-        }
-        return filtered
+        val dayMs = 24L * 60 * 60 * 1000
+        val beforeMs = AppPreferences.getDaysBefore(context) * dayMs
+        val afterMs  = AppPreferences.getDaysAfter(context)  * dayMs
+        return filtered.filter { it.isRecurring || it.dtStart in (now - beforeMs)..(now + afterMs) }
     }
 
     fun findCalendarIds(context: Context): List<Long> {
