@@ -133,7 +133,9 @@ object NotificationHelper {
             .setContentTitle(todo.title)
             .setContentIntent(openEventIntent)
             .apply {
-                if (!todo.isRecurring) addAction(
+                if (todo.isRecurring) addAction(
+                    R.drawable.ic_recurring, context.getString(R.string.recurring_event), openEventIntent
+                ) else addAction(
                     R.drawable.ic_delete, context.getString(R.string.delete_confirm), deleteIntent
                 )
             }

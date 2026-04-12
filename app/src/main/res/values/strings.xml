@@ -4,9 +4,9 @@
 
     <!-- Status bar -->
     <string name="status_empty">No events found in the "Todo" calendar</string>
-    <string name="switch_show_old">Show ToDos from \u003c2026</string>
-    <string name="switch_near_only">Show ToDos within ±1 week</string>
-    <string name="switch_month_only">Show ToDos within ±1 month</string>
+    <string name="switch_show_old">Show ToDos from before 026</string>
+    <string name="slider_days_before">Show ToDos before today</string>
+    <string name="slider_days_after">Show ToDos after today</string>
     <string name="menu_demo_mode">Demo mode</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_calendar_name">Calendar name</string>
@@ -20,6 +20,7 @@
     <string name="about_open_repo">View Source</string>
     <string name="repo_url">https://github.com/caco3/Persistent-ToDo-Notifications</string>
     <string name="dialog_cancel">Cancel</string>
+    <string name="recurring_event">Recurring event</string>
     <string name="delete_event">Delete event</string>
     <string name="delete_event_title">Delete event?</string>
     <string name="delete_event_message">Delete "%1$s"? This cannot be undone.</string>

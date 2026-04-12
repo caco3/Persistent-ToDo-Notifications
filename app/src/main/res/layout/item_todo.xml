@@ -37,6 +37,16 @@
             android:textAppearance="@style/TextAppearance.Material3.BodySmall"
             android:textColor="?attr/colorOnSurfaceVariant" />
 
+        <ImageView
+            android:id="@+id/iconRecurring"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:padding="8dp"
+            android:contentDescription="@string/recurring_event"
+            android:src="@drawable/ic_recurring"
+            android:visibility="gone" />
+
         <ImageButton
             android:id="@+id/btnDelete"
             android:layout_width="40dp"

@@ -31,8 +31,10 @@ class TodoAdapter(
         fun bind(todo: TodoItem) {
             binding.root.setOnClickListener { onItemClick(todo) }
             if (todo.isRecurring) {
+                binding.iconRecurring.visibility = android.view.View.VISIBLE
                 binding.btnDelete.visibility = android.view.View.GONE
             } else {
+                binding.iconRecurring.visibility = android.view.View.GONE
                 binding.btnDelete.visibility = android.view.View.VISIBLE
                 binding.btnDelete.setOnClickListener { onDeleteClick(todo) }
             }
