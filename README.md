@@ -1,23 +1,20 @@
 # Todo Notifications
 
-An Android app that reads events from a DAVx5-synced **"ToDo" calendar** and displays them as **persistent grouped notifications** in the notification shade.
+An Android app that reads events from a DAVx5-synced **"ToDo" calendar** and displays them as **persistent notifications** in the notification shade. In case they get swiped away by accident, they will show up after some seconds.
 
 ## Features
 
-- Reads todos from the Android calendar (DAVx5 "ToDo" calendar)
-- One notification card per todo — BC2-style grouped individual notifications
-- Notifications are restored automatically within ~3 seconds if dismissed (watchdog)
-- Tap a notification card to open the event in BC2 calendar app (fallback: system calendar)
+- Reads todos from the Android calendar (DAVx5 "ToDo" calendar, configurable)
+- One notification card per todo
+- Notifications are restored automatically within ~3 seconds if dismissed
+- Tap a notification card to open the event in [Business Calendar 2](https://play.google.com/store/apps/details?id=com.appgenix.bizcal) (fallback: system calendar)
 - **Delete** a todo directly from the notification card ("Delete" action button) or from the app's list view
-- Filters (via overflow menu):
+- Filters (via **⋮ overflow menu → Settings**):
   - **Show ToDos from <2026** toggle
-  - **Only show ToDos within ±1 week** toggle
-  - **Only show ToDos within ±1 month** toggle
-  - **Demo mode** — shows synthetic dummy todos (no calendar required)
-- Notifications update automatically when the calendar changes (ContentObserver)
-- Notifications reliably restored after device reboot (foreground service started immediately on `BOOT_COMPLETED`)
-- About dialog with app version info
-- Clean Material 3 UI
+  - **Show ToDos within ±1 week** toggle
+  - **Show ToDos within ±1 month** toggle
+- **Demo mode** (via Settings → Development) — shows synthetic dummy todos (no calendar required)
+- Notifications update automatically when the calendar changes
 
 ## Screenshots
 
@@ -66,7 +63,10 @@ Only one time-range filter can be active at a time; enabling one clears the othe
 |---|---|
 | Demo mode | Show synthetic dummy todos — no calendar required (useful for screenshots/testing) |
 
-## Setup
+## Installation
+xxx
+
+## Development
 
 ### Option A — Android Studio
 
@@ -77,7 +77,7 @@ Only one time-range filter can be active at a time; enabling one clears the othe
 
 > `local.properties` is generated automatically by Android Studio. Do not commit it.
 
-### Option B — `build.sh` (no Android Studio required)
+### Option B (Linux) — `build.sh` (no Android Studio required)
 
 `build.sh` downloads all required SDK components and builds the APK entirely from the command line.
 
