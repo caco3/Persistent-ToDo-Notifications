@@ -40,6 +40,13 @@
             android:taskAffinity=""
             android:excludeFromRecents="true" />
 
+        <activity
+            android:name=".TodoActionActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Material3.DayNight.Dialog"
+            android:taskAffinity=""
+            android:excludeFromRecents="true" />
+
         <property
             android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
             android:value="Persistent todo list visible in the notification shade" />

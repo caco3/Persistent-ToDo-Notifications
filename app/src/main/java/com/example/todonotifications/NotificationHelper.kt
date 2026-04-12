@@ -10,8 +10,9 @@ import android.content.pm.PackageManager
 import android.provider.CalendarContract
 import androidx.core.app.NotificationCompat
 import androidx.core.net.toUri
-import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 object NotificationHelper {
 
@@ -40,6 +41,28 @@ object NotificationHelper {
         val raw = todoId.toLongOrNull()?.toInt() ?: todoId.hashCode()
         val id = if (raw == Int.MIN_VALUE) Int.MAX_VALUE else kotlin.math.abs(raw)
         return if (id == NOTIFICATION_ID_SUMMARY) id + 1 else id
+    }
+
+    fun buildDoneLabel(context: Context, todo: TodoItem): String {
+        if (!todo.isRecurring) {
+            return "${context.getString(R.string.done_action)} (${context.getString(R.string.done_suffix_delete)})"
+        }
+        val anchor = if (todo.dtStart > 0L) maxOf(todo.dtStart, System.currentTimeMillis())
+                     else System.currentTimeMillis()
+        val searchFrom = java.util.Calendar.getInstance().run {
+            timeInMillis = anchor
+            set(java.util.Calendar.HOUR_OF_DAY, 23)
+            set(java.util.Calendar.MINUTE, 59)
+            set(java.util.Calendar.SECOND, 59)
+            set(java.util.Calendar.MILLISECOND, 999)
+            timeInMillis
+        }
+        val next = CalendarTodoSource.findNextInstanceAfter(context, todo.id, searchFrom)
+        val suffix = if (next != null)
+            SimpleDateFormat("d. MMMM yyyy", Locale.getDefault()).format(Date(next))
+        else
+            context.getString(R.string.done_suffix_recurring_unknown)
+        return "${context.getString(R.string.done_action)} (${context.getString(R.string.done_suffix_recurs_at, suffix)})"
     }
 
     fun buildOpenEventIntent(context: Context, eventId: String): Intent {
@@ -110,28 +133,15 @@ object NotificationHelper {
 
     fun buildTodoNotification(context: Context, todo: TodoItem): Notification {
         val notifId = getNotificationIdForTodo(todo.id)
-        val openEventIntent = PendingIntent.getActivity(
+        val todoActionIntent = PendingIntent.getActivity(
             context,
             notifId,
-            buildOpenEventIntent(context, todo.id),
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        val deleteIntent = PendingIntent.getBroadcast(
-            context,
-            notifId + 1,
-            Intent(context, NotificationActionReceiver::class.java).apply {
-                action = NotificationActionReceiver.ACTION_DELETE_TODO
+            Intent(context, TodoActionActivity::class.java).apply {
                 putExtra(NotificationActionReceiver.EXTRA_TODO_ID, todo.id)
                 putExtra(NotificationActionReceiver.EXTRA_NOTIF_ID, notifId)
-            },
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        val snoozeIntent = PendingIntent.getActivity(
-            context,
-            notifId + 2,
-            Intent(context, SnoozePickerActivity::class.java).apply {
-                putExtra(NotificationActionReceiver.EXTRA_TODO_ID, todo.id)
-                putExtra(NotificationActionReceiver.EXTRA_NOTIF_ID, notifId)
+                putExtra(NotificationActionReceiver.EXTRA_IS_RECURRING, todo.isRecurring)
+                putExtra(NotificationActionReceiver.EXTRA_DT_START, todo.dtStart)
+                putExtra(NotificationActionReceiver.EXTRA_TITLE, todo.title)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             },
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
@@ -141,34 +151,15 @@ object NotificationHelper {
             .setOngoing(true)
             .setAutoCancel(false)
             .setContentTitle(todo.title)
-            .setContentIntent(openEventIntent)
-            .addAction(R.drawable.ic_snooze, context.getString(R.string.snooze_button), snoozeIntent)
-            .apply {
-                if (todo.isRecurring) {
-                    val doneIntent = PendingIntent.getBroadcast(
-                        context,
-                        notifId + 3,
-                        Intent(context, NotificationActionReceiver::class.java).apply {
-                            action = NotificationActionReceiver.ACTION_DONE_RECURRING
-                            putExtra(NotificationActionReceiver.EXTRA_TODO_ID, todo.id)
-                            putExtra(NotificationActionReceiver.EXTRA_NOTIF_ID, notifId)
-                            putExtra(NotificationActionReceiver.EXTRA_DT_START, todo.dtStart)
-                        },
-                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-                    )
-                    addAction(R.drawable.ic_check, context.getString(R.string.done_recurring), doneIntent)
-                } else {
-                    addAction(R.drawable.ic_delete, context.getString(R.string.delete_confirm), deleteIntent)
-                }
-            }
+            .setContentIntent(todoActionIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setGroup(GROUP_KEY)
         if (todo.dtStart > 0L) {
             val date = Date(todo.dtStart)
-            val label = "${DateFormat.getDateInstance(DateFormat.MEDIUM).format(date)}" +
-                    "  ${DateFormat.getTimeInstance(DateFormat.SHORT).format(date)}"
+            val label = "${SimpleDateFormat("d. MMMM yyyy", Locale.getDefault()).format(date)}" +
+                    "  ${java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT).format(date)}"
             builder.setContentText(label)
                 .setWhen(todo.dtStart)
                 .setShowWhen(true)

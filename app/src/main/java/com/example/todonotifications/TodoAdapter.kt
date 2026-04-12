@@ -6,14 +6,12 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todonotifications.databinding.ItemTodoBinding
-import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 class TodoAdapter(
-    private val onItemClick: (TodoItem) -> Unit,
-    private val onDeleteClick: (TodoItem) -> Unit,
-    private val onSnoozeClick: (TodoItem) -> Unit,
-    private val onDoneClick: (TodoItem) -> Unit
+    private val onItemClick: (TodoItem) -> Unit
 ) : ListAdapter<TodoItem, TodoAdapter.ViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -32,21 +30,13 @@ class TodoAdapter(
 
         fun bind(todo: TodoItem) {
             binding.root.setOnClickListener { onItemClick(todo) }
-            binding.btnSnooze.setOnClickListener { onSnoozeClick(todo) }
-            if (todo.isRecurring) {
-                binding.btnDone.visibility = android.view.View.VISIBLE
-                binding.btnDone.setOnClickListener { onDoneClick(todo) }
-                binding.btnDelete.visibility = android.view.View.GONE
-            } else {
-                binding.btnDone.visibility = android.view.View.GONE
-                binding.btnDelete.visibility = android.view.View.VISIBLE
-                binding.btnDelete.setOnClickListener { onDeleteClick(todo) }
-            }
             binding.textTodoTitle.text = todo.title
+            binding.iconRecurring.visibility =
+                if (todo.isRecurring) android.view.View.VISIBLE else android.view.View.GONE
             binding.textTodoDate.text = if (todo.dtStart > 0L) {
                 val date = Date(todo.dtStart)
-                val datePart = DateFormat.getDateInstance(DateFormat.SHORT).format(date)
-                val timePart = DateFormat.getTimeInstance(DateFormat.SHORT).format(date)
+                val datePart = SimpleDateFormat("d. MMMM yyyy", Locale.getDefault()).format(date)
+                val timePart = java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT).format(date)
                 "$datePart $timePart"
             } else {
                 ""

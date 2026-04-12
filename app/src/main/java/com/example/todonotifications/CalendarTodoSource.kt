@@ -68,11 +68,16 @@ object CalendarTodoSource {
         val recurringIds = todos.filter { it.isRecurring }.map { it.id }.toSet()
         if (recurringIds.isNotEmpty()) {
             val now = System.currentTimeMillis()
+            val dayMs = 24L * 60 * 60 * 1000L
+            val beforeMs = AppPreferences.getDaysBefore(context) * dayMs
+            val afterMs  = AppPreferences.getDaysAfter(context)  * dayMs
+            val windowStart = now - beforeMs
+            val windowEnd   = now + afterMs
             val instanceUri = CalendarContract.Instances.CONTENT_URI.buildUpon()
-                .appendPath(now.toString())
-                .appendPath((now + 365L * 24 * 60 * 60 * 1000).toString())
+                .appendPath(windowStart.toString())
+                .appendPath(windowEnd.toString())
                 .build()
-            val nextInstanceMap = mutableMapOf<String, Long>()
+            val allInstances = mutableMapOf<String, MutableList<Long>>()
             context.contentResolver.query(
                 instanceUri,
                 arrayOf(CalendarContract.Instances.EVENT_ID, CalendarContract.Instances.BEGIN),
@@ -83,12 +88,20 @@ object CalendarTodoSource {
                 val beginCol = c.getColumnIndexOrThrow(CalendarContract.Instances.BEGIN)
                 while (c.moveToNext()) {
                     val eid = c.getLong(eidCol).toString()
-                    if (eid in recurringIds) nextInstanceMap.putIfAbsent(eid, c.getLong(beginCol))
+                    if (eid in recurringIds)
+                        allInstances.getOrPut(eid) { mutableListOf() }.add(c.getLong(beginCol))
                 }
             }
+            val instanceMap = mutableMapOf<String, Long>()
+            for ((eid, instances) in allInstances) {
+                val handledUntil = AppPreferences.getHandledUntil(context, eid)
+                val unhandled = instances.filter { it > handledUntil }
+                val chosen = unhandled.lastOrNull { it <= now } ?: unhandled.firstOrNull()
+                if (chosen != null) instanceMap[eid] = chosen
+            }
             val updated = todos.map { todo ->
-                val next = nextInstanceMap[todo.id]
-                if (todo.isRecurring && next != null) todo.copy(dtStart = next) else todo
+                val instance = instanceMap[todo.id]
+                if (todo.isRecurring && instance != null) todo.copy(dtStart = instance) else todo
             }
             todos.clear()
             todos.addAll(updated.sortedBy { it.dtStart })
@@ -113,8 +126,28 @@ object CalendarTodoSource {
         return rangeFiltered.filter { !AppPreferences.isSnoozed(context, it.id) }
     }
 
+    fun getAvailableCalendarNames(context: Context): List<String> {
+        if (!hasCalendarPermission(context)) return emptyList()
+        val names = mutableListOf<String>()
+        context.contentResolver.query(
+            CalendarContract.Calendars.CONTENT_URI,
+            arrayOf(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME),
+            null, null,
+            "${CalendarContract.Calendars.CALENDAR_DISPLAY_NAME} ASC"
+        )?.use { c ->
+            val col = c.getColumnIndexOrThrow(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME)
+            while (c.moveToNext()) {
+                c.getString(col)?.takeIf { it.isNotBlank() }?.let { names.add(it) }
+            }
+        }
+        return names.distinct()
+    }
+
     fun findCalendarIds(context: Context): List<Long> {
         if (!hasCalendarPermission(context)) return emptyList()
+        val names = AppPreferences.getCalendarNames(context)
+        if (names.isEmpty()) return emptyList()
+        val placeholders = names.joinToString(",") { "?" }
         val ids = mutableListOf<Long>()
         val cursor = context.contentResolver.query(
             CalendarContract.Calendars.CONTENT_URI,
@@ -122,8 +155,8 @@ object CalendarTodoSource {
                 CalendarContract.Calendars._ID,
                 CalendarContract.Calendars.CALENDAR_DISPLAY_NAME
             ),
-            "${CalendarContract.Calendars.CALENDAR_DISPLAY_NAME} = ?",
-            arrayOf(AppPreferences.getCalendarName(context)),
+            "${CalendarContract.Calendars.CALENDAR_DISPLAY_NAME} IN ($placeholders)",
+            names.toTypedArray(),
             null
         )
         cursor?.use {
@@ -133,6 +166,26 @@ object CalendarTodoSource {
             }
         }
         return ids
+    }
+
+    fun findNextInstanceAfter(context: Context, todoId: String, afterTimestamp: Long): Long? {
+        if (!hasCalendarPermission(context)) return null
+        val end = afterTimestamp + 2 * 365L * 24 * 60 * 60 * 1000
+        val instanceUri = CalendarContract.Instances.CONTENT_URI.buildUpon()
+            .appendPath((afterTimestamp + 1).toString())
+            .appendPath(end.toString())
+            .build()
+        context.contentResolver.query(
+            instanceUri,
+            arrayOf(CalendarContract.Instances.EVENT_ID, CalendarContract.Instances.BEGIN),
+            "${CalendarContract.Instances.EVENT_ID} = ?",
+            arrayOf(todoId),
+            "${CalendarContract.Instances.BEGIN} ASC"
+        )?.use { c ->
+            val beginCol = c.getColumnIndexOrThrow(CalendarContract.Instances.BEGIN)
+            if (c.moveToFirst()) return c.getLong(beginCol)
+        }
+        return null
     }
 
     fun getDummyTodos(): List<TodoItem> {

@@ -166,12 +166,12 @@
                 android:textColor="?attr/colorPrimary" />
 
             <LinearLayout
-                android:id="@+id/rowCalendarName"
+                android:id="@+id/rowAddCalendar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:minHeight="56dp"
                 android:gravity="center_vertical"
-                android:orientation="vertical"
+                android:orientation="horizontal"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="8dp"
                 android:background="?attr/selectableItemBackground"
@@ -179,19 +179,28 @@
                 android:focusable="true">
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:text="@string/menu_calendar_name"
                     android:textAppearance="@style/TextAppearance.Material3.BodyLarge" />
 
-                <TextView
-                    android:id="@+id/textCalendarName"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddCalendar"
+                    style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-                    android:textColor="?attr/colorOnSurfaceVariant" />
+                    android:text="@string/calendar_add"
+                    android:clickable="false"
+                    android:focusable="false" />
 
             </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/containerCalendarNames"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
 
             <View
                 android:layout_width="match_parent"

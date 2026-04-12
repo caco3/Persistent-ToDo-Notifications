@@ -1,8 +1,10 @@
 package com.example.todonotifications
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.MenuItem
-import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.todonotifications.databinding.ActivitySettingsBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -50,8 +52,9 @@ class SettingsActivity : AppCompatActivity() {
             changed = true
         })
 
-        binding.textCalendarName.text = AppPreferences.getCalendarName(this)
-        binding.rowCalendarName.setOnClickListener { pickCalendarName() }
+        binding.rowAddCalendar.setOnClickListener { addCalendarName() }
+        binding.btnAddCalendar.setOnClickListener { addCalendarName() }
+        rebuildCalendarList()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -74,26 +77,48 @@ class SettingsActivity : AppCompatActivity() {
         changed = true
     }
 
-    private fun pickCalendarName() {
-        val input = EditText(this).apply {
-            setText(AppPreferences.getCalendarName(this@SettingsActivity))
-            hint = AppPreferences.DEFAULT_CALENDAR_NAME
-            setPadding(48, 24, 48, 8)
+    private fun addCalendarName() {
+        val already = AppPreferences.getCalendarNames(this)
+        val available = CalendarTodoSource.getAvailableCalendarNames(this)
+            .filter { it !in already }
+        if (available.isEmpty()) {
+            MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.menu_calendar_name)
+                .setMessage(R.string.calendar_none_available)
+                .setPositiveButton(R.string.dialog_cancel, null)
+                .show()
+            return
         }
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.menu_calendar_name)
-            .setMessage(R.string.calendar_name_message)
-            .setView(input)
-            .setPositiveButton(R.string.dialog_save) { _, _ ->
-                val name = input.text.toString().trim()
-                if (name.isNotEmpty()) {
-                    AppPreferences.setCalendarName(this, name)
-                    binding.textCalendarName.text = name
-                    changed = true
-                }
+            .setItems(available.toTypedArray()) { _, which ->
+                val name = available[which]
+                val names = AppPreferences.getCalendarNames(this).toMutableSet()
+                names.add(name)
+                AppPreferences.setCalendarNames(this, names)
+                rebuildCalendarList()
+                changed = true
             }
             .setNegativeButton(R.string.dialog_cancel, null)
             .show()
+    }
+
+    private fun rebuildCalendarList() {
+        val container = binding.containerCalendarNames
+        container.removeAllViews()
+        val names = AppPreferences.getCalendarNames(this).sorted()
+        for (name in names) {
+            val row = LayoutInflater.from(this).inflate(R.layout.item_calendar_name, container, false)
+            row.findViewById<TextView>(R.id.textCalendarItemName).text = name
+            row.findViewById<ImageButton>(R.id.btnRemoveCalendar).setOnClickListener {
+                val current = AppPreferences.getCalendarNames(this).toMutableSet()
+                current.remove(name)
+                AppPreferences.setCalendarNames(this, current)
+                rebuildCalendarList()
+                changed = true
+            }
+            container.addView(row)
+        }
     }
 
     private fun toggleDemoMode() {

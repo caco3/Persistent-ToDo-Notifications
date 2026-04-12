@@ -10,6 +10,7 @@ object AppPreferences {
     private const val KEY_DAYS_AFTER = "days_after"
     private const val KEY_DEMO_MODE = "demo_mode"
     private const val KEY_CALENDAR_NAME = "calendar_name"
+    private const val KEY_CALENDAR_NAMES = "calendar_names"
     const val DEFAULT_CALENDAR_NAME = "ToDo"
 
     fun getShowOldEvents(context: Context): Boolean =
@@ -49,12 +50,26 @@ object AppPreferences {
     }
 
     fun getCalendarName(context: Context): String =
+        getCalendarNames(context).firstOrNull() ?: DEFAULT_CALENDAR_NAME
+
+    fun getCalendarNames(context: Context): Set<String> {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (!prefs.contains(KEY_CALENDAR_NAMES)) {
+            val legacy = prefs.getString(KEY_CALENDAR_NAME, DEFAULT_CALENDAR_NAME) ?: DEFAULT_CALENDAR_NAME
+            val migrated = setOf(legacy)
+            prefs.edit().putStringSet(KEY_CALENDAR_NAMES, migrated).apply()
+            return migrated
+        }
+        return prefs.getStringSet(KEY_CALENDAR_NAMES, setOf(DEFAULT_CALENDAR_NAME)) ?: setOf(DEFAULT_CALENDAR_NAME)
+    }
+
+    fun setCalendarNames(context: Context, names: Set<String>) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getString(KEY_CALENDAR_NAME, DEFAULT_CALENDAR_NAME) ?: DEFAULT_CALENDAR_NAME
+            .edit().putStringSet(KEY_CALENDAR_NAMES, names).apply()
+    }
 
     fun setCalendarName(context: Context, value: String) {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit().putString(KEY_CALENDAR_NAME, value.trim()).apply()
+        setCalendarNames(context, setOf(value.trim()))
     }
 
     private const val KEY_SNOOZED_TODOS = "snoozed_todos"
@@ -96,6 +111,34 @@ object AppPreferences {
         if (cleaned.size != existing.size) {
             prefs.edit().putStringSet(KEY_SNOOZED_TODOS, cleaned).apply()
         }
+    }
+
+    private const val KEY_HANDLED_UNTIL = "handled_until"
+
+    fun setHandledUntil(context: Context, todoId: String, timestamp: Long) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val existing = prefs.getStringSet(KEY_HANDLED_UNTIL, emptySet())!!.toMutableSet()
+        existing.removeAll { it.startsWith("$todoId:") }
+        existing.add("$todoId:${endOfDay(timestamp)}")
+        prefs.edit().putStringSet(KEY_HANDLED_UNTIL, existing).apply()
+    }
+
+    private fun endOfDay(timestamp: Long): Long {
+        val cal = java.util.Calendar.getInstance().apply {
+            timeInMillis = timestamp
+            set(java.util.Calendar.HOUR_OF_DAY, 23)
+            set(java.util.Calendar.MINUTE, 59)
+            set(java.util.Calendar.SECOND, 59)
+            set(java.util.Calendar.MILLISECOND, 999)
+        }
+        return cal.timeInMillis
+    }
+
+    fun getHandledUntil(context: Context, todoId: String): Long {
+        val set = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getStringSet(KEY_HANDLED_UNTIL, emptySet()) ?: return 0L
+        return set.firstOrNull { it.startsWith("$todoId:") }
+            ?.split(":", limit = 2)?.getOrNull(1)?.toLongOrNull() ?: 0L
     }
 
     fun getNextSnoozeExpiry(context: Context): Long? {

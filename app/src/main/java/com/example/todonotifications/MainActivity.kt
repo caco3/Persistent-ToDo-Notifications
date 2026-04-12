@@ -61,10 +61,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
 
         adapter = TodoAdapter(
-            onItemClick = { todo -> openTodoEvent(todo) },
-            onDeleteClick = { todo -> confirmDeleteTodo(todo) },
-            onSnoozeClick = { todo -> showSnoozeDialog(todo) },
-            onDoneClick = { todo -> markRecurringDone(todo) }
+            onItemClick = { todo -> showTodoActionDialog(todo) }
         )
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = adapter
@@ -156,28 +153,6 @@ class MainActivity : AppCompatActivity() {
         ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR) ==
                 PackageManager.PERMISSION_GRANTED
 
-    private fun confirmDeleteTodo(todo: TodoItem) {
-        if (!hasWriteCalendarPermission()) {
-            calendarPermissionLauncher.launch(
-                arrayOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)
-            )
-            return
-        }
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.delete_event_title)
-            .setMessage(getString(R.string.delete_event_message, todo.title))
-            .setPositiveButton(R.string.delete_confirm) { _, _ ->
-                val uri = ContentUris.withAppendedId(
-                    CalendarContract.Events.CONTENT_URI, todo.id.toLong()
-                )
-                contentResolver.delete(uri, null, null)
-                refreshTodos()
-                startNotificationService()
-            }
-            .setNegativeButton(R.string.dialog_cancel, null)
-            .show()
-    }
-
     private fun requestNotificationPermissionIfNeeded() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
@@ -218,6 +193,50 @@ class MainActivity : AppCompatActivity() {
         NotificationHelper.postTodoNotification(this)
     }
 
+    private fun showTodoActionDialog(todo: TodoItem) {
+        val view = layoutInflater.inflate(R.layout.dialog_todo_action, null)
+        view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnDone).text =
+            NotificationHelper.buildDoneLabel(this, todo)
+        val dialog = MaterialAlertDialogBuilder(this, R.style.WideDialog)
+            .setTitle(todo.title)
+            .setView(view)
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .show()
+        view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnDone)
+            .setOnClickListener { dialog.dismiss(); markAsDone(todo) }
+        view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSnooze)
+            .setOnClickListener { dialog.dismiss(); showSnoozeDialog(todo) }
+        view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnOpenCalendar)
+            .setOnClickListener {
+                dialog.dismiss()
+                startActivity(NotificationHelper.buildOpenEventIntent(this, todo.id))
+            }
+        dialog.window?.setLayout(
+            resources.displayMetrics.widthPixels - 10,
+            android.view.WindowManager.LayoutParams.WRAP_CONTENT
+        )
+    }
+
+    private fun markAsDone(todo: TodoItem) {
+        if (!hasWriteCalendarPermission()) {
+            calendarPermissionLauncher.launch(
+                arrayOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)
+            )
+            return
+        }
+        if (todo.isRecurring) {
+            AppPreferences.setHandledUntil(this, todo.id, todo.dtStart)
+            NotificationActionReceiver.scheduleNextOccurrenceAlarm(this, todo.id, todo.dtStart)
+        } else {
+            val uri = ContentUris.withAppendedId(
+                CalendarContract.Events.CONTENT_URI, todo.id.toLong()
+            )
+            contentResolver.delete(uri, null, null)
+        }
+        startNotificationService()
+        refreshTodos()
+    }
+
     private fun showSnoozeDialog(todo: TodoItem) {
         val options = arrayOf(
             getString(R.string.snooze_1day),
@@ -241,19 +260,6 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton(R.string.dialog_cancel, null)
             .show()
-    }
-
-    private fun markRecurringDone(todo: TodoItem) {
-        val snoozeMs = NotificationActionReceiver.doneUntilMs(todo.dtStart)
-        AppPreferences.snoozeTodo(this, todo.id, snoozeMs)
-        NotificationActionReceiver.scheduleSnoozeWakeup(this, snoozeMs)
-        startNotificationService()
-        refreshTodos()
-    }
-
-    private fun openTodoEvent(todo: TodoItem) {
-        val intent = NotificationHelper.buildOpenEventIntent(this, todo.id)
-        startActivity(intent)
     }
 
     private fun refreshTodos(scrollToTop: Boolean = false) {
