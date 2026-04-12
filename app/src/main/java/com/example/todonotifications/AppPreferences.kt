@@ -6,8 +6,8 @@ object AppPreferences {
 
     private const val PREFS_NAME = "app_prefs"
     private const val KEY_SHOW_OLD_EVENTS = "show_old_events"
-    private const val KEY_NEAR_ONLY = "near_only"
-    private const val KEY_MONTH_ONLY = "month_only"
+    private const val KEY_DAYS_BEFORE = "days_before"
+    private const val KEY_DAYS_AFTER = "days_after"
     private const val KEY_DEMO_MODE = "demo_mode"
     private const val KEY_CALENDAR_NAME = "calendar_name"
     const val DEFAULT_CALENDAR_NAME = "ToDo"
@@ -21,22 +21,22 @@ object AppPreferences {
             .edit().putBoolean(KEY_SHOW_OLD_EVENTS, value).apply()
     }
 
-    fun getNearOnly(context: Context): Boolean =
+    fun getDaysBefore(context: Context): Int =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getBoolean(KEY_NEAR_ONLY, false)
+            .getInt(KEY_DAYS_BEFORE, 30)
 
-    fun setNearOnly(context: Context, value: Boolean) {
+    fun setDaysBefore(context: Context, value: Int) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit().putBoolean(KEY_NEAR_ONLY, value).apply()
+            .edit().putInt(KEY_DAYS_BEFORE, value).apply()
     }
 
-    fun getMonthOnly(context: Context): Boolean =
+    fun getDaysAfter(context: Context): Int =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getBoolean(KEY_MONTH_ONLY, false)
+            .getInt(KEY_DAYS_AFTER, 30)
 
-    fun setMonthOnly(context: Context, value: Boolean) {
+    fun setDaysAfter(context: Context, value: Int) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit().putBoolean(KEY_MONTH_ONLY, value).apply()
+            .edit().putInt(KEY_DAYS_AFTER, value).apply()
     }
 
     fun getDemoMode(context: Context): Boolean =

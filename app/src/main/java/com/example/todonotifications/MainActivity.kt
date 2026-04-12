@@ -229,9 +229,12 @@ class MainActivity : AppCompatActivity() {
             binding.progressIndicator.visibility = android.view.View.GONE
             if (scrollToTop) binding.recyclerView.scrollToPosition(0)
         }
+        val daysBefore = AppPreferences.getDaysBefore(this)
+        val daysAfter  = AppPreferences.getDaysAfter(this)
         binding.textStatus.text = if (todos.isEmpty())
             getString(R.string.status_empty)
         else
-            resources.getQuantityString(R.plurals.notification_title_count, todos.size, todos.size) + ":"
+            resources.getQuantityString(R.plurals.notification_title_count, todos.size, todos.size) +
+                    " (last $daysBefore days/next $daysAfter days):"
     }
 }
