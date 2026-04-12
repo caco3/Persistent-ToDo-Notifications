@@ -20,10 +20,6 @@
     <string name="about_open_repo">View Source</string>
     <string name="repo_url">https://github.com/caco3/Persistent-ToDo-Notifications</string>
     <string name="dialog_cancel">Cancel</string>
-    <string name="battery_opt_title">Disable Battery Optimisation</string>
-    <string name="battery_opt_message">To keep todo notifications visible at all times, please allow the app to run unrestricted in the background.</string>
-    <string name="battery_opt_allow">Allow</string>
-
     <string name="delete_event">Delete event</string>
     <string name="delete_event_title">Delete event?</string>
     <string name="delete_event_message">Delete "%1$s"? This cannot be undone.</string>
