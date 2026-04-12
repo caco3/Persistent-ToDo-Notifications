@@ -45,10 +45,24 @@ android {
         buildConfigField "String", "GIT_TAG",  "\"${gitTag()}\""
     }
 
+    signingConfigs {
+        if (System.getenv("KEYSTORE_BASE64")) {
+            release {
+                storeFile = file("${rootDir}/release.keystore")
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (System.getenv("KEYSTORE_BASE64")) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 
