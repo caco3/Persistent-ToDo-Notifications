@@ -148,3 +148,7 @@ app/src/main/
 | `POST_NOTIFICATIONS` | Show notifications (required at runtime on Android 13+) |
 | `RECEIVE_BOOT_COMPLETED` | Restart notification service after reboot |
 | `FOREGROUND_SERVICE` | Keep the summary notification alive |
+
+## License
+
+This project is licensed under the **GNU General Public License v3.0** — see the [LICENSE](LICENSE) file for details.

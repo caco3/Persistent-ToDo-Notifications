@@ -45,6 +45,9 @@ class MainActivity : AppCompatActivity() {
     ) { results ->
         if (results[Manifest.permission.READ_CALENDAR] == true) {
             refreshTodos()
+            NotificationHelper.createNotificationChannel(this)
+            requestNotificationPermissionIfNeeded()
+            requestBatteryOptimizationExemption()
             startNotificationService()
         } else {
             Toast.makeText(this, getString(R.string.permission_calendar_denied), Toast.LENGTH_LONG).show()
