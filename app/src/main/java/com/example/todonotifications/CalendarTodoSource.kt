@@ -10,14 +10,13 @@ import java.util.Calendar
 object CalendarTodoSource {
 
     private const val TAG = "CalendarTodoSource"
-    const val CALENDAR_NAME = "ToDo"
 
     fun getTodos(context: Context, ignoreFilters: Boolean = false): List<TodoItem> {
         if (!hasCalendarPermission(context)) return emptyList()
 
         val calendarIds = findCalendarIds(context)
         if (calendarIds.isEmpty()) {
-            Log.w(TAG, "No calendar named '$CALENDAR_NAME' found")
+            Log.w(TAG, "No calendar named '${AppPreferences.getCalendarName(context)}' found")
             return emptyList()
         }
 
@@ -97,7 +96,7 @@ object CalendarTodoSource {
                 CalendarContract.Calendars.CALENDAR_DISPLAY_NAME
             ),
             "${CalendarContract.Calendars.CALENDAR_DISPLAY_NAME} = ?",
-            arrayOf(CALENDAR_NAME),
+            arrayOf(AppPreferences.getCalendarName(context)),
             null
         )
         cursor?.use {

@@ -2,8 +2,10 @@ package com.example.todonotifications
 
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import com.example.todonotifications.databinding.ActivitySettingsBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -26,6 +28,9 @@ class SettingsActivity : AppCompatActivity() {
         binding.rowNearOnly.setOnClickListener  { toggleNearOnly() }
         binding.rowMonthOnly.setOnClickListener { toggleMonthOnly() }
         binding.rowDemoMode.setOnClickListener  { toggleDemoMode() }
+
+        binding.textCalendarName.text = AppPreferences.getCalendarName(this)
+        binding.rowCalendarName.setOnClickListener { pickCalendarName() }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -72,6 +77,28 @@ class SettingsActivity : AppCompatActivity() {
         }
         syncSwitches()
         changed = true
+    }
+
+    private fun pickCalendarName() {
+        val input = EditText(this).apply {
+            setText(AppPreferences.getCalendarName(this@SettingsActivity))
+            hint = AppPreferences.DEFAULT_CALENDAR_NAME
+            setPadding(48, 24, 48, 8)
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.menu_calendar_name)
+            .setMessage(R.string.calendar_name_message)
+            .setView(input)
+            .setPositiveButton(R.string.dialog_save) { _, _ ->
+                val name = input.text.toString().trim()
+                if (name.isNotEmpty()) {
+                    AppPreferences.setCalendarName(this, name)
+                    binding.textCalendarName.text = name
+                    changed = true
+                }
+            }
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .show()
     }
 
     private fun toggleDemoMode() {

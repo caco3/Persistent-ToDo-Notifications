@@ -9,6 +9,8 @@ object AppPreferences {
     private const val KEY_NEAR_ONLY = "near_only"
     private const val KEY_MONTH_ONLY = "month_only"
     private const val KEY_DEMO_MODE = "demo_mode"
+    private const val KEY_CALENDAR_NAME = "calendar_name"
+    const val DEFAULT_CALENDAR_NAME = "ToDo"
 
     fun getShowOldEvents(context: Context): Boolean =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -44,5 +46,14 @@ object AppPreferences {
     fun setDemoMode(context: Context, value: Boolean) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .edit().putBoolean(KEY_DEMO_MODE, value).apply()
+    }
+
+    fun getCalendarName(context: Context): String =
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getString(KEY_CALENDAR_NAME, DEFAULT_CALENDAR_NAME) ?: DEFAULT_CALENDAR_NAME
+
+    fun setCalendarName(context: Context, value: String) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit().putString(KEY_CALENDAR_NAME, value.trim()).apply()
     }
 }
