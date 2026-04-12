@@ -14,7 +14,7 @@
     <string name="settings_section_dev">Development</string>
     <string name="settings_demo_mode_summary">Show synthetic todos (no calendar required)</string>
     <string name="about_open_repo">View Source</string>
-    <string name="repo_url">https://git.home.ruinelli.ch/intern/TodoNotifications</string>
+    <string name="repo_url">https://github.com/caco3/Persistent-ToDo-Notifications</string>
     <string name="dialog_cancel">Cancel</string>
     <string name="delete_event">Delete event</string>
     <string name="delete_event_title">Delete event?</string>
