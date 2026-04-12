@@ -6,15 +6,20 @@ An Android app that reads events from a DAVx5-synced **"ToDo" calendar** and dis
 
 ## Features
 
-- Reads todos from the Android calendar (DAVx5 "ToDo" calendar, configurable)
+- Reads todos from the Android calendars (DAVx5 calendars)
 - One notification card per todo
 - Notifications are restored automatically within ~3 seconds if dismissed
-- Tap a notification card to open the event in [Business Calendar 2](https://play.google.com/store/apps/details?id=com.appgenix.bizcal) (fallback: system calendar)
-- **Delete** a todo directly from the notification card ("Delete" action button) or from the app's list view
+- **Tap a notification card** to open an action dialog with:
+  - **Mark as Done** — deletes the event (non-recurring), or advances to the next occurrence (recurring); the button label shows the next recurrence date
+  - **Snooze** — hide the notification for a given time
+  - **Open in Calendar** — opens the event in [Business Calendar 2](https://play.google.com/store/apps/details?id=com.appgenix.bizcal) (fallback: system calendar)
+- **Recurring event support** — recurring events are detected automatically and shown with a recurring icon; completing one advances it to the next occurrence instead of deleting it
+- **Delete** a todo directly from the app's list view
+- **Multiple calendars** — add or remove any number of device calendars as todo sources (Settings → Calendar)
 - Filters (via **⋮ overflow menu → Settings**):
-  - **Show ToDos from <2026** toggle
-  - **Show ToDos within ±1 week** toggle
-  - **Show ToDos within ±1 month** toggle
+  - **Show ToDos from before 2026** toggle
+  - **Days before today** slider (0–365, default: 30)
+  - **Days after today** slider (0–365, default: 30)
 - **Demo mode** (via Settings → Development) — shows synthetic dummy todos (no calendar required)
 - Notifications update automatically when the calendar changes
 
@@ -47,17 +52,13 @@ Accessible via the **⋮ overflow menu → Settings** and the **About** item in 
 
 | Setting | Description |
 |---|---|
-| Show ToDos from <2026 | Include events with a start date before 2026 |
-| Show ToDos within ±1 week | Narrow the list to events within 7 days of today |
-| Show ToDos within ±1 month | Narrow the list to events within 30 days of today |
-
-Only one time-range filter can be active at a time; enabling one clears the others.
+| Show ToDos from before 2026 | Include events with a start date before 2026 |
+| Days before today | Slider (0–365, default: 30) — how many days into the past to include |
+| Days after today | Slider (0–365, default: 30) — how many days into the future to include |
 
 **Calendar**
 
-| Setting | Description |
-|---|---|
-| Calendar name | Display name of the Android calendar to read todos from (case-sensitive, default: `ToDo`) |
+Add or remove any number of device calendars as todo sources. Tap **+ Add** to pick from the calendars available on the device; tap the remove button next to an entry to stop reading from that calendar. Existing single-name settings are migrated automatically.
 
 **Development**
 
@@ -116,27 +117,35 @@ build.sh                              # CLI build + flash script (no Android Stu
 app/src/main/
 ├── java/com/example/todonotifications/
 │   ├── TodoItem.kt                   # Data class (id, title, dtStart, isRecurring)
-│   ├── CalendarTodoSource.kt         # Reads events from the "ToDo" calendar
-│   ├── AppPreferences.kt             # SharedPreferences for filter/settings toggles
+│   ├── CalendarTodoSource.kt         # Reads events from the calendar(s); recurring instance resolution
+│   ├── AppPreferences.kt             # SharedPreferences: filters, snooze state, handled-until, calendar names
 │   ├── NotificationHelper.kt         # Builds summary + per-todo notifications
-│   ├── NotificationActionReceiver.kt # Handles ACTION_REPOST and ACTION_DELETE_TODO
+│   ├── NotificationActionReceiver.kt # Handles ACTION_REPOST, ACTION_DELETE_TODO, ACTION_SNOOZE_TODO, ACTION_DONE_RECURRING; schedules exact alarms
 │   ├── TodoForegroundService.kt      # Foreground service + 3s watchdog
 │   ├── BootReceiver.kt               # Restarts service after reboot
 │   ├── MainActivity.kt               # Main UI (list, overflow menu)
-│   ├── SettingsActivity.kt           # Settings screen (filters, demo mode)
-│   └── TodoAdapter.kt                # RecyclerView adapter
+│   ├── SettingsActivity.kt           # Settings screen (filters, multiple calendars, demo mode)
+│   ├── TodoActionActivity.kt         # Action dialog: Mark as Done / Snooze / Open in Calendar
+│   ├── SnoozePickerActivity.kt       # Snooze duration picker dialog
+│   ├── TodoAdapter.kt                # RecyclerView adapter
+│   └── TodoPreferences.kt            # Per-todo preference helpers
 └── res/
     ├── layout/
     │   ├── activity_main.xml
     │   ├── activity_settings.xml
-    │   └── item_todo.xml
+    │   ├── item_todo.xml
+    │   ├── dialog_todo_action.xml    # Action dialog layout (Done / Snooze / Open in Calendar)
+    │   ├── item_calendar_name.xml    # Row in the multi-calendar list
+    │   ├── notification_collapsed.xml
+    │   ├── notification_expanded.xml
+    │   └── notification_row.xml
     ├── menu/
     │   └── menu_main.xml             # Overflow menu items
     ├── values/
     │   ├── strings.xml
     │   ├── themes.xml
     │   └── colors.xml
-    └── drawable/                     # Vector icons
+    └── drawable/                     # Vector icons (incl. ic_recurring.xml, ic_snooze.xml)
 ```
 
 ## Permissions Used
@@ -152,3 +161,7 @@ app/src/main/
 ## License
 
 This project is licensed under the **GNU General Public License v3.0** — see the [LICENSE](LICENSE) file for details.
+
+# Copyright
+
+Copyright (c) 2026 George Ruinelli <caco3@ruinelli.ch>
