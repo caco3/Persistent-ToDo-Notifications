@@ -69,48 +69,10 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        menu.findItem(R.id.action_show_old).isChecked  = AppPreferences.getShowOldEvents(this)
-        menu.findItem(R.id.action_near_only).isChecked = AppPreferences.getNearOnly(this)
-        menu.findItem(R.id.action_month_only).isChecked = AppPreferences.getMonthOnly(this)
-        menu.findItem(R.id.action_demo_mode).isChecked = AppPreferences.getDemoMode(this)
-        return true
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val newChecked = !item.isChecked
         when (item.itemId) {
-            R.id.action_show_old -> {
-                AppPreferences.setShowOldEvents(this, newChecked)
-                if (newChecked) {
-                    AppPreferences.setNearOnly(this, false)
-                    AppPreferences.setMonthOnly(this, false)
-                }
-                if (hasCalendarPermission()) refreshTodos(scrollToTop = true)
-                startNotificationService()
-            }
-            R.id.action_near_only -> {
-                AppPreferences.setNearOnly(this, newChecked)
-                if (newChecked) {
-                    AppPreferences.setShowOldEvents(this, false)
-                    AppPreferences.setMonthOnly(this, false)
-                }
-                if (hasCalendarPermission()) refreshTodos(scrollToTop = true)
-                startNotificationService()
-            }
-            R.id.action_month_only -> {
-                AppPreferences.setMonthOnly(this, newChecked)
-                if (newChecked) {
-                    AppPreferences.setShowOldEvents(this, false)
-                    AppPreferences.setNearOnly(this, false)
-                }
-                if (hasCalendarPermission()) refreshTodos(scrollToTop = true)
-                startNotificationService()
-            }
-            R.id.action_demo_mode -> {
-                AppPreferences.setDemoMode(this, newChecked)
-                refreshTodos(scrollToTop = true)
-                startNotificationService()
+            R.id.action_settings -> {
+                startActivity(android.content.Intent(this, SettingsActivity::class.java))
             }
             R.id.action_about -> {
                 val repoUrl = getString(R.string.repo_url)
