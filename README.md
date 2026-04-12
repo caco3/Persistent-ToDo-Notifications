@@ -2,7 +2,7 @@
 
 An Android app that reads events from a DAVx5-synced **"ToDo" calendar** and displays them as **persistent notifications** in the notification shade. In case they get swiped away by accident, they will show up after some seconds.
 
-<video src="screenshots/swipe-away-restore.mp4" autoplay loop muted playsinline></video>
+<video src="https://github.com/user-attachments/assets/3493ffd2-f941-403a-b5a1-96239d1fc2fc" autoplay loop muted playsinline></video>
 
 ## Features
 
