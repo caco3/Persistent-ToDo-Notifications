@@ -3,6 +3,20 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
+def gitTag = { ->
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'describe', '--tags', '--exact-match', 'HEAD'
+            standardOutput = stdout
+            ignoreExitValue = true
+        }
+        return stdout.toString().trim() ?: ''
+    } catch (Exception e) {
+        return ''
+    }
+}
+
 def gitHash = { ->
     try {
         def stdout = new ByteArrayOutputStream()
@@ -28,6 +42,7 @@ android {
         versionCode 1
         versionName "1.0"
         buildConfigField "String", "GIT_HASH", "\"${gitHash()}\""
+        buildConfigField "String", "GIT_TAG",  "\"${gitTag()}\""
     }
 
     buildTypes {

@@ -79,6 +79,7 @@ class MainActivity : AppCompatActivity() {
                 MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.menu_about)
                     .setMessage("${getString(R.string.app_name)}\n\n" +
+                            (if (BuildConfig.GIT_TAG.isNotEmpty()) "Version: ${BuildConfig.GIT_TAG}\n" else "") +
                             "Build: ${BuildConfig.GIT_HASH}\n\n" +
                             "Source:\n$repoUrl")
                     .setPositiveButton(R.string.about_open_repo) { _, _ ->
