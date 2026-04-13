@@ -5,5 +5,6 @@ data class TodoItem(
     val title: String,
     val dtStart: Long = 0L,
     val isRecurring: Boolean = false,
-    val nextDtStart: Long? = null
+    val nextDtStart: Long? = null,
+    val calendarColor: Int? = null
 )

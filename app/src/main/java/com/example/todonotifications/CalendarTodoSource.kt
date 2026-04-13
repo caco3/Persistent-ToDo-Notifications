@@ -19,6 +19,7 @@ object CalendarTodoSource {
             Log.w(TAG, "No calendar named '${AppPreferences.getCalendarName(context)}' found")
             return emptyList()
         }
+        val calendarColorMap = buildCalendarColorMap(context, calendarIds)
 
         val todos = mutableListOf<TodoItem>()
         val idPlaceholders = calendarIds.joinToString(" OR ") {
@@ -34,7 +35,8 @@ object CalendarTodoSource {
                 CalendarContract.Events.DTSTART,
                 CalendarContract.Events.STATUS,
                 CalendarContract.Events.RRULE,
-                CalendarContract.Events.ORIGINAL_ID
+                CalendarContract.Events.ORIGINAL_ID,
+                CalendarContract.Events.CALENDAR_ID
             ),
             "($idPlaceholders) AND ${CalendarContract.Events.DELETED} != 1",
             selectionArgs,
@@ -48,6 +50,7 @@ object CalendarTodoSource {
             val statusCol     = it.getColumnIndexOrThrow(CalendarContract.Events.STATUS)
             val rruleCol      = it.getColumnIndexOrThrow(CalendarContract.Events.RRULE)
             val originalIdCol = it.getColumnIndexOrThrow(CalendarContract.Events.ORIGINAL_ID)
+            val calIdCol      = it.getColumnIndexOrThrow(CalendarContract.Events.CALENDAR_ID)
 
             while (it.moveToNext()) {
                 if (it.getInt(statusCol) == CalendarContract.Events.STATUS_CANCELED) continue
@@ -56,10 +59,11 @@ object CalendarTodoSource {
                         !it.getString(originalIdCol).isNullOrEmpty()
                 todos.add(
                     TodoItem(
-                        id          = it.getLong(idCol).toString(),
-                        title       = title,
-                        dtStart     = it.getLong(startCol),
-                        isRecurring = isRecurring
+                        id            = it.getLong(idCol).toString(),
+                        title         = title,
+                        dtStart       = it.getLong(startCol),
+                        isRecurring   = isRecurring,
+                        calendarColor = calendarColorMap[it.getLong(calIdCol)]
                     )
                 )
             }
@@ -165,6 +169,23 @@ object CalendarTodoSource {
         return names.distinct()
     }
 
+    private fun buildCalendarColorMap(context: Context, calendarIds: List<Long>): Map<Long, Int> {
+        val map = mutableMapOf<Long, Int>()
+        val placeholders = calendarIds.joinToString(",") { "?" }
+        context.contentResolver.query(
+            CalendarContract.Calendars.CONTENT_URI,
+            arrayOf(CalendarContract.Calendars._ID, CalendarContract.Calendars.CALENDAR_COLOR),
+            "${CalendarContract.Calendars._ID} IN ($placeholders)",
+            calendarIds.map { it.toString() }.toTypedArray(),
+            null
+        )?.use { c ->
+            val idCol    = c.getColumnIndexOrThrow(CalendarContract.Calendars._ID)
+            val colorCol = c.getColumnIndexOrThrow(CalendarContract.Calendars.CALENDAR_COLOR)
+            while (c.moveToNext()) map[c.getLong(idCol)] = c.getInt(colorCol)
+        }
+        return map
+    }
+
     fun findCalendarIds(context: Context): List<Long> {
         if (!hasCalendarPermission(context)) return emptyList()
         val names = AppPreferences.getCalendarNames(context)
@@ -216,15 +237,15 @@ object CalendarTodoSource {
         return listOf(
             TodoItem("1", "Call dentist to reschedule appointment",   now - 2 * day),
             TodoItem("2", "Review Q2 budget report",                   now - day),
-            TodoItem("3", "Buy birthday gift for Anna",                now + day),
-            TodoItem("4", "Submit expense report",                     now + 2 * day),
-            TodoItem("5", "Team standup preparation",                  now + 3 * day),
-            TodoItem("6", "Renew car insurance",                       now + 5 * day),
-            TodoItem("7", "Book hotel for conference",                 now + 8 * day),
-            TodoItem("8", "Finish slide deck for product review",      now + 10 * day),
-            TodoItem("9", "Pay quarterly taxes",                       now + 14 * day),
-            TodoItem("10", "Schedule annual checkup",                  now + 18 * day),
-            TodoItem("11", "Order replacement laptop charger",         now + 21 * day),
+            TodoItem("3", "Weekly team sync",                          now + day,      isRecurring = true, nextDtStart = now + 8 * day),
+            TodoItem("4", "Buy birthday gift for Anna",                now + 2 * day),
+            TodoItem("5", "Submit expense report",                     now + 3 * day),
+            TodoItem("6", "Monthly 1:1 with manager",                  now + 5 * day,  isRecurring = true, nextDtStart = now + 35 * day),
+            TodoItem("7", "Renew car insurance",                       now + 8 * day),
+            TodoItem("8", "Book hotel for conference",                 now + 10 * day),
+            TodoItem("9", "Quarterly taxes",                           now + 14 * day, isRecurring = true, nextDtStart = now + 104 * day),
+            TodoItem("10", "Finish slide deck for product review",     now + 18 * day),
+            TodoItem("11", "Annual checkup",                           now + 21 * day, isRecurring = true, nextDtStart = now + 386 * day),
             TodoItem("12", "Plan team offsite agenda",                 now + 25 * day)
         )
     }

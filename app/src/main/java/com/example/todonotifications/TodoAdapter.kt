@@ -31,6 +31,12 @@ class TodoAdapter(
         fun bind(todo: TodoItem) {
             binding.root.setOnClickListener { onItemClick(todo) }
             binding.textTodoTitle.text = todo.title
+            if (todo.calendarColor != null) {
+                binding.viewCalendarColor.setBackgroundColor(todo.calendarColor)
+                binding.viewCalendarColor.visibility = android.view.View.VISIBLE
+            } else {
+                binding.viewCalendarColor.visibility = android.view.View.INVISIBLE
+            }
             binding.iconRecurring.visibility =
                 if (todo.isRecurring) android.view.View.VISIBLE else android.view.View.GONE
             if (todo.dtStart > 0L) {
