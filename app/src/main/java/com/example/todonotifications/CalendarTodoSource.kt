@@ -97,11 +97,21 @@ object CalendarTodoSource {
                 val handledUntil = AppPreferences.getHandledUntil(context, eid)
                 val unhandled = instances.filter { it > handledUntil }
                 val chosen = unhandled.lastOrNull { it <= now } ?: unhandled.firstOrNull()
+                Log.d(TAG, "eid=$eid instances=${instances.size} handledUntil=$handledUntil unhandled=${unhandled.size} chosen=$chosen")
                 if (chosen != null) instanceMap[eid] = chosen
             }
-            val updated = todos.map { todo ->
+            val updated = todos.mapNotNull { todo ->
                 val instance = instanceMap[todo.id]
-                if (todo.isRecurring && instance != null) todo.copy(dtStart = instance) else todo
+                when {
+                    !todo.isRecurring -> todo
+                    instance != null -> todo.copy(dtStart = instance)
+                    else -> {
+                        val handledUntil = AppPreferences.getHandledUntil(context, todo.id)
+                        val notInWindow = todo.id !in allInstances
+                        Log.d(TAG, "recurring id=${todo.id} title='${todo.title}' dtStart=${todo.dtStart} handledUntil=$handledUntil notInWindow=$notInWindow")
+                        if (notInWindow && handledUntil >= todo.dtStart) null else todo
+                    }
+                }
             }
             todos.clear()
             todos.addAll(updated.sortedBy { it.dtStart })
