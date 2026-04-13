@@ -156,6 +156,7 @@ object NotificationHelper {
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setGroup(GROUP_KEY)
+        if (todo.calendarColor != null) builder.setColor(todo.calendarColor)
         if (todo.dtStart > 0L) {
             val date = Date(todo.dtStart)
             val label = "${SimpleDateFormat("d. MMMM yyyy", Locale.getDefault()).format(date)}" +

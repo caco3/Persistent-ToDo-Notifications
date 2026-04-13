@@ -111,10 +111,17 @@ class SettingsActivity : AppCompatActivity() {
     private fun rebuildCalendarList() {
         val container = binding.containerCalendarNames
         container.removeAllViews()
+        val colorMap = CalendarTodoSource.getCalendarNameColorMap(this)
         val names = AppPreferences.getCalendarNames(this).sorted()
         for (name in names) {
             val row = LayoutInflater.from(this).inflate(R.layout.item_calendar_name, container, false)
             row.findViewById<TextView>(R.id.textCalendarItemName).text = name
+            val swatch = row.findViewById<android.view.View>(R.id.viewCalendarItemColor)
+            val color = colorMap[name]
+            if (color != null) {
+                (swatch.background as? android.graphics.drawable.GradientDrawable)?.setColor(color)
+                swatch.visibility = android.view.View.VISIBLE
+            }
             row.findViewById<ImageButton>(R.id.btnRemoveCalendar).setOnClickListener {
                 val current = AppPreferences.getCalendarNames(this).toMutableSet()
                 current.remove(name)

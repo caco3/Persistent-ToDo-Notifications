@@ -169,6 +169,32 @@ object CalendarTodoSource {
         return names.distinct()
     }
 
+    fun getCalendarNameColorMap(context: Context): Map<String, Int> {
+        if (!hasCalendarPermission(context)) return emptyMap()
+        val names = AppPreferences.getCalendarNames(context)
+        if (names.isEmpty()) return emptyMap()
+        val placeholders = names.joinToString(",") { "?" }
+        val map = mutableMapOf<String, Int>()
+        context.contentResolver.query(
+            CalendarContract.Calendars.CONTENT_URI,
+            arrayOf(
+                CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
+                CalendarContract.Calendars.CALENDAR_COLOR
+            ),
+            "${CalendarContract.Calendars.CALENDAR_DISPLAY_NAME} IN ($placeholders)",
+            names.toTypedArray(),
+            null
+        )?.use { c ->
+            val nameCol  = c.getColumnIndexOrThrow(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME)
+            val colorCol = c.getColumnIndexOrThrow(CalendarContract.Calendars.CALENDAR_COLOR)
+            while (c.moveToNext()) {
+                val name = c.getString(nameCol) ?: continue
+                map[name] = c.getInt(colorCol)
+            }
+        }
+        return map
+    }
+
     private fun buildCalendarColorMap(context: Context, calendarIds: List<Long>): Map<Long, Int> {
         val map = mutableMapOf<Long, Int>()
         val placeholders = calendarIds.joinToString(",") { "?" }

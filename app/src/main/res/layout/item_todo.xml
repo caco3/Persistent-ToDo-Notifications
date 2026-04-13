@@ -20,7 +20,7 @@
 
         <View
             android:id="@+id/viewCalendarColor"
-            android:layout_width="4dp"
+            android:layout_width="8dp"
             android:layout_height="match_parent"
             android:visibility="invisible" />
 
