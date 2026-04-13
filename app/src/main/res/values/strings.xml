@@ -20,6 +20,13 @@
     <string name="settings_section_calendar">Calendar</string>
     <string name="settings_section_dev">Development</string>
     <string name="settings_demo_mode_summary">Show synthetic todos (no calendar required)</string>
+    <string name="reset_done_snoozes">Reset all done / snoozes</string>
+    <string name="reset_done_snoozes_summary">Clear all "handled until" and snooze state</string>
+    <string name="reset_done_snoozes_confirm">Reset</string>
+    <string name="share_log">Share action log</string>
+    <string name="share_log_summary">Share todo_actions.log (done / snooze history)</string>
+    <string name="share_log_empty">Log is empty</string>
+    <string name="reset_done_snoozes_message">All recurring done-marks and snoozes will be cleared. Events will reappear.</string>
     <string name="about_open_repo">View Source</string>
     <string name="repo_url">https://github.com/caco3/Persistent-ToDo-Notifications</string>
     <string name="dialog_cancel">Cancel</string>

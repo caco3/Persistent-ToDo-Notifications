@@ -141,6 +141,13 @@ object AppPreferences {
             ?.split(":", limit = 2)?.getOrNull(1)?.toLongOrNull() ?: 0L
     }
 
+    fun clearAllDoneAndSnoozes(context: Context) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
+            .remove(KEY_HANDLED_UNTIL)
+            .remove(KEY_SNOOZED_TODOS)
+            .apply()
+    }
+
     fun getNextSnoozeExpiry(context: Context): Long? {
         val now = System.currentTimeMillis()
         val snoozed = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

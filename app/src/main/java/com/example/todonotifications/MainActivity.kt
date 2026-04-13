@@ -227,11 +227,13 @@ class MainActivity : AppCompatActivity() {
         if (todo.isRecurring) {
             AppPreferences.setHandledUntil(this, todo.id, todo.dtStart)
             NotificationActionReceiver.scheduleNextOccurrenceAlarm(this, todo.id, todo.dtStart)
+            AppLogger.log(this, "DONE (recurring)  id=${todo.id}  title='${todo.title}'  dtStart=${todo.dtStart}")
         } else {
             val uri = ContentUris.withAppendedId(
                 CalendarContract.Events.CONTENT_URI, todo.id.toLong()
             )
             contentResolver.delete(uri, null, null)
+            AppLogger.log(this, "DONE (deleted)  id=${todo.id}  title='${todo.title}'")
         }
         startNotificationService()
         refreshTodos()
@@ -255,6 +257,7 @@ class MainActivity : AppCompatActivity() {
             .setItems(options) { _, which ->
                 AppPreferences.snoozeTodo(this, todo.id, durations[which])
                 NotificationActionReceiver.scheduleSnoozeWakeup(this, durations[which])
+                AppLogger.log(this, "SNOOZE  id=${todo.id}  title='${todo.title}'  duration=${options[which]}")
                 startNotificationService()
                 refreshTodos()
             }

@@ -78,6 +78,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 val notifId = intent.getIntExtra(EXTRA_NOTIF_ID, -1)
                 val durationMs = intent.getLongExtra(EXTRA_SNOOZE_DURATION_MS, 60 * 60 * 1000L)
                 AppPreferences.snoozeTodo(context, todoId, durationMs)
+                AppLogger.log(context, "SNOOZE  id=$todoId  durationMs=$durationMs")
                 if (notifId != -1) {
                     context.getSystemService(NotificationManager::class.java).cancel(notifId)
                 }
@@ -89,6 +90,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
                 val notifId = intent.getIntExtra(EXTRA_NOTIF_ID, -1)
                 val dtStart = intent.getLongExtra(EXTRA_DT_START, 0L)
                 AppPreferences.setHandledUntil(context, todoId, dtStart)
+                AppLogger.log(context, "DONE (recurring)  id=$todoId  dtStart=$dtStart")
                 if (notifId != -1) {
                     context.getSystemService(NotificationManager::class.java).cancel(notifId)
                 }

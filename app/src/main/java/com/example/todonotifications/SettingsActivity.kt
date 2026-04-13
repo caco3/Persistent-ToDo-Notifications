@@ -1,10 +1,12 @@
 package com.example.todonotifications
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.todonotifications.databinding.ActivitySettingsBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -55,6 +57,9 @@ class SettingsActivity : AppCompatActivity() {
         binding.rowAddCalendar.setOnClickListener { addCalendarName() }
         binding.btnAddCalendar.setOnClickListener { addCalendarName() }
         rebuildCalendarList()
+
+        binding.rowShareLog.setOnClickListener { shareLog() }
+        binding.rowResetDoneSnoozes.setOnClickListener { confirmResetDoneSnoozes() }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -126,6 +131,35 @@ class SettingsActivity : AppCompatActivity() {
         AppPreferences.setDemoMode(this, newVal)
         binding.switchDemoMode.isChecked = newVal
         changed = true
+    }
+
+    private fun shareLog() {
+        val file = AppLogger.logFile(this)
+        if (!file.exists() || file.length() == 0L) {
+            Toast.makeText(this, R.string.share_log_empty, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val content = file.readText()
+        startActivity(Intent.createChooser(
+            Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_SUBJECT, "todo_actions.log")
+                putExtra(Intent.EXTRA_TEXT, content)
+            },
+            getString(R.string.share_log)
+        ))
+    }
+
+    private fun confirmResetDoneSnoozes() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.reset_done_snoozes)
+            .setMessage(R.string.reset_done_snoozes_message)
+            .setPositiveButton(R.string.reset_done_snoozes_confirm) { _, _ ->
+                AppPreferences.clearAllDoneAndSnoozes(this)
+                TodoForegroundService.startOrUpdate(this)
+            }
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .show()
     }
 
     private fun syncSwitches() {
