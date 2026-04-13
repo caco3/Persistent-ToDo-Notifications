@@ -107,9 +107,8 @@ object CalendarTodoSource {
                     instance != null -> todo.copy(dtStart = instance)
                     else -> {
                         val handledUntil = AppPreferences.getHandledUntil(context, todo.id)
-                        val notInWindow = todo.id !in allInstances
-                        Log.d(TAG, "recurring id=${todo.id} title='${todo.title}' dtStart=${todo.dtStart} handledUntil=$handledUntil notInWindow=$notInWindow")
-                        if (notInWindow && handledUntil >= todo.dtStart) null else todo
+                        Log.d(TAG, "recurring id=${todo.id} title='${todo.title}' dtStart=${todo.dtStart} handledUntil=$handledUntil inWindow=${todo.id in allInstances}")
+                        if (handledUntil >= todo.dtStart) null else todo
                     }
                 }
             }
