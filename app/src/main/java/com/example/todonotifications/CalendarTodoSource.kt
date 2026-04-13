@@ -123,7 +123,20 @@ object CalendarTodoSource {
         val rangeFiltered = filtered.filter { it.dtStart in (now - beforeMs)..(now + afterMs) }
 
         AppPreferences.clearExpiredSnoozes(context)
-        return rangeFiltered.filter { !AppPreferences.isSnoozed(context, it.id) }
+        val result = rangeFiltered.filter { !AppPreferences.isSnoozed(context, it.id) }
+        return result.map { todo ->
+            if (!todo.isRecurring) todo else {
+                val anchor = Calendar.getInstance().run {
+                    timeInMillis = maxOf(todo.dtStart, now)
+                    set(Calendar.HOUR_OF_DAY, 23)
+                    set(Calendar.MINUTE, 59)
+                    set(Calendar.SECOND, 59)
+                    set(Calendar.MILLISECOND, 999)
+                    timeInMillis
+                }
+                todo.copy(nextDtStart = findNextInstanceAfter(context, todo.id, anchor))
+            }
+        }
     }
 
     fun getAvailableCalendarNames(context: Context): List<String> {

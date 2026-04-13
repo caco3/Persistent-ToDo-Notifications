@@ -87,7 +87,7 @@ class TodoForegroundService : Service() {
         activeNotifIds.clear()
         activeNotifIds.addAll(newIds)
 
-        todos.forEachIndexed { index, todo ->
+        todos.reversed().forEachIndexed { index, todo ->
             val id = NotificationHelper.getNotificationIdForTodo(todo.id)
             val runnable = Runnable { nm.notify(id, NotificationHelper.buildTodoNotification(this, todo)) }
             pendingNotifRunnables.add(runnable)

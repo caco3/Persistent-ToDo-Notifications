@@ -4,5 +4,6 @@ data class TodoItem(
     val id: String,
     val title: String,
     val dtStart: Long = 0L,
-    val isRecurring: Boolean = false
+    val isRecurring: Boolean = false,
+    val nextDtStart: Long? = null
 )

@@ -48,9 +48,19 @@
                 android:layout_marginStart="6dp"
                 android:src="@drawable/ic_recurring"
                 android:contentDescription="@string/recurring_event"
-                android:alpha="0.5"
+                android:alpha="1.0"
+                android:tint="@android:color/black"
                 android:clickable="false"
                 android:focusable="false"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/textTodoNextDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:visibility="gone" />
 
         </LinearLayout>

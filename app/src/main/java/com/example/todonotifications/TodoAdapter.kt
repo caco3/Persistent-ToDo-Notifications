@@ -33,13 +33,19 @@ class TodoAdapter(
             binding.textTodoTitle.text = todo.title
             binding.iconRecurring.visibility =
                 if (todo.isRecurring) android.view.View.VISIBLE else android.view.View.GONE
-            binding.textTodoDate.text = if (todo.dtStart > 0L) {
+            if (todo.dtStart > 0L) {
                 val date = Date(todo.dtStart)
                 val datePart = SimpleDateFormat("d. MMMM yyyy", Locale.getDefault()).format(date)
                 val timePart = java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT).format(date)
-                "$datePart $timePart"
+                binding.textTodoDate.text = "$datePart $timePart"
             } else {
-                ""
+                binding.textTodoDate.text = ""
+            }
+            if (todo.isRecurring && todo.nextDtStart != null) {
+                binding.textTodoNextDate.text = "-> ${SimpleDateFormat("d. MMMM yyyy", Locale.getDefault()).format(Date(todo.nextDtStart))}"
+                binding.textTodoNextDate.visibility = android.view.View.VISIBLE
+            } else {
+                binding.textTodoNextDate.visibility = android.view.View.GONE
             }
         }
     }
